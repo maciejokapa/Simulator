@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "SimulationNode.h"
 
-class andNode : public Node
+class andNode : public SimulationNode
 {
 public:
-	andNode(uint16_t nodeId);
-	void Evaluate(void);
+	andNode(NodeId_t nodeId, float xPos, float yPos);
+	void Propagate(std::queue<NodeId_t>& toEvaluate);
+	void OnClick(sf::Event& event, ClickInfo_t& clickInfo);
 };
 

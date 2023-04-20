@@ -1,19 +1,20 @@
 #pragma once
 
-#include "GeneralOutput.h"
+#include "Pin.h"
 
 class Input
 {
 private:
 
-	GeneralOutput* connection;
+	Pin* connection;
 public:
-	Input(GeneralOutput* initialConnection = nullptr);
+	Input(Pin* initialConnection = nullptr);
 	/* Sprawdzenie czy input jest po³¹czony */
 	bool IsConnected(void) const;
 	/* Zwraca stan na podstawie po³¹czengo outputu */
-	GeneralOutput::State_t GetState(void) const;
+	Pin::State_t GetState(void) const;
 	/* Modyfikuje element connection */
-	void Connect(GeneralOutput* connection);
+	void Connect(Pin* connection);
+	void Disonnect(Pin* connection);
 };
 

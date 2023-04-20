@@ -1,20 +1,19 @@
 #pragma once
 
 
-class GeneralOutput
+class Pin
 {
 public:
 	enum class State_t
 	{
 		LOW,
 		HIGH,
-		HIGH_Z,
 		UNDEFINED
 	};
 
-	State_t GetState(void);
+	State_t GetState(void) const;
 
-	GeneralOutput(State_t state);
+	Pin(State_t state);
 
 protected:
 	/* Aktualny stan ouptutu */

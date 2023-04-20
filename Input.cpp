@@ -1,6 +1,6 @@
 #include "Input.h"
 
-Input::Input(GeneralOutput* initialConnection)
+Input::Input(Pin* initialConnection)
 {
 	this->connection = initialConnection;
 }
@@ -10,11 +10,11 @@ bool Input::IsConnected(void) const
 	return (nullptr != this->connection);
 }
 
-GeneralOutput::State_t Input::GetState(void) const
+Pin::State_t Input::GetState(void) const
 {
-	GeneralOutput::State_t state;
+	Pin::State_t state;
 
-	state = GeneralOutput::State_t::UNDEFINED;
+	state = Pin::State_t::UNDEFINED;
 
 	if (this->IsConnected())
 	{
@@ -24,7 +24,15 @@ GeneralOutput::State_t Input::GetState(void) const
 	return state;
 }
 
-void Input::Connect(GeneralOutput* connection)
+void Input::Connect(Pin* connection)
 {
 	this->connection = connection;
+}
+
+void Input::Disonnect(Pin* connection)
+{
+	if (connection == this->connection)
+	{
+		this->connection = nullptr;
+	}
 }

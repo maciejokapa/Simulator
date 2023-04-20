@@ -2,18 +2,18 @@
 
 #include <algorithm>
 
-Output::Output(GeneralOutput::State_t initialState) : GeneralOutput(initialState)
+Output::Output(Pin::State_t initialState) : Pin(initialState)
 {
 	this->connectedObjectsId.clear();
 }
 
-Output::Output(GeneralOutput::State_t initialState, uint16_t initialObject) : GeneralOutput(initialState)
+Output::Output(Pin::State_t initialState, NodeId_t initialObjectId) : Pin(initialState)
 {
 	this->connectedObjectsId.clear();
-	this->connectedObjectsId.push_back(initialObject);
+	this->connectedObjectsId.push_back(initialObjectId);
 }
 
-bool Output::UpdateState(GeneralOutput::State_t newState)
+bool Output::UpdateState(Pin::State_t newState)
 {
 	bool updateResult;
 
@@ -28,16 +28,21 @@ bool Output::UpdateState(GeneralOutput::State_t newState)
 	return updateResult;
 }
 
-void Output::Connect(uint16_t newConnectedObject)
+void Output::Connect(NodeId_t newConnectedObjectId)
 {
 	if (this->connectedObjectsId.end() == 
-		std::find(this->connectedObjectsId.begin(), this->connectedObjectsId.end(), newConnectedObject))
+		std::find(this->connectedObjectsId.begin(), this->connectedObjectsId.end(), newConnectedObjectId))
 	{
-		this->connectedObjectsId.push_back(newConnectedObject);
+		this->connectedObjectsId.push_back(newConnectedObjectId);
 	}
 }
 
-void Output::GetConnectedObjects(std::list<uint16_t>& connectedObjectsId) const
+void Output::Disonnect(NodeId_t connectedObjectId)
+{
+	this->connectedObjectsId.remove(connectedObjectId);
+}
+
+void Output::GetConnectedObjects(std::list<NodeId_t>& connectedObjectsId) const
 {
 	connectedObjectsId = this->connectedObjectsId;
 }
