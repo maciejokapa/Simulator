@@ -11,7 +11,7 @@ class Output : public Pin
 {
 public:
 
-	Output(State_t initialState);
+	Output(State_t initialState = Pin::State_t::UNDEFINED);
 	Output(State_t initialState, NodeId_t initialObject);
 
 	/* Ustawia nowy stan i zwraca info czy siê zmieni³ czy nie */

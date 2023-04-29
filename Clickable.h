@@ -12,17 +12,20 @@
 class Clickable
 {
 protected:
-	std::vector<sf::Shape*> shapes;
+	const float baseSize;
 
-	static const float baseSize;
-	static const float pinSize;
-	static const uint8_t baseShapeIdx;
+	sf::Shape* shape;
+	sf::Vector2f basePosition;
+
+	static const float smallestNodeSize;
+	static const float smallestPinSize;
+
 public:
-	Clickable(uint8_t shapesNum);
+	Clickable(sf::Shape* shape, float xPos, float yPos, float size);
 
 	bool IsClicked(sf::Event& event) const;
-	void Draw(sf::RenderWindow& window) const;
 
-	virtual void OnClick(sf::Event& event, ClickInfo_t& clickInfo) = 0;
+	virtual void Draw(sf::RenderWindow& window) const = 0;
+	virtual void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const = 0;
 };
 

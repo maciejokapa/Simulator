@@ -1,30 +1,32 @@
 #include "andNode.h"
 
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 
 #include <stdio.h>
 
 #define AND_NODE_IN_LEN		(2u)
 #define AND_NODE_OUT_LEN	(1u)
-#define AND_NODE_SHAPES_NUM	(AND_NODE_IN_LEN + AND_NODE_OUT_LEN + 1u)
 
-andNode::andNode(NodeId_t nodeId, float xPos, float yPos) : SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, AND_NODE_SHAPES_NUM)
+#define AND_NODE_SIZE		(2.0f * Clickable::smallestNodeSize)
+
+andNode::andNode(NodeId_t nodeId, float xPos, float yPos) 
+	: SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, new sf::RectangleShape(sf::Vector2f(AND_NODE_SIZE, AND_NODE_SIZE)), xPos, yPos, AND_NODE_SIZE)
 {
-	this->shapes[Clickable::baseShapeIdx] = new sf::RectangleShape(sf::Vector2f(Clickable::baseSize, Clickable::baseSize));
-	this->shapes[Clickable::baseShapeIdx]->setPosition(xPos - Clickable::baseSize / 2, yPos - Clickable::baseSize / 2);
-	this->shapes[Clickable::baseShapeIdx]->setFillColor(sf::Color::Blue);
+	this->shape->setPosition(this->basePosition.x - AND_NODE_SIZE / 2, this->basePosition.y - AND_NODE_SIZE / 2);
+	this->shape->setFillColor(sf::Color::Blue);
 
-	this->shapes[1] = new sf::RectangleShape(sf::Vector2f(Clickable::pinSize, Clickable::pinSize));
-	this->shapes[1]->setPosition(xPos - Clickable::baseSize / 2, yPos - Clickable::baseSize / 4 - Clickable::pinSize / 2);
-	this->shapes[1]->setFillColor(sf::Color::Red);
+	this->simulationInputs[0].Init(new sf::CircleShape(Clickable::smallestPinSize));
+	this->simulationInputs[0].Transform(this->basePosition.x - AND_NODE_SIZE / 2, this->basePosition.y - AND_NODE_SIZE / 2 + Clickable::smallestPinSize / 2);
+	this->simulationInputs[0].UpdateColor(sf::Color::Red);
 
-	this->shapes[2] = new sf::RectangleShape(sf::Vector2f(Clickable::pinSize, Clickable::pinSize));
-	this->shapes[2]->setPosition(xPos - Clickable::baseSize / 2, yPos + Clickable::baseSize / 4 - Clickable::pinSize / 2);
-	this->shapes[2]->setFillColor(sf::Color::Red);
+	this->simulationInputs[1].Init(new sf::CircleShape(Clickable::smallestPinSize));
+	this->simulationInputs[1].Transform(this->basePosition.x - AND_NODE_SIZE / 2, this->basePosition.y - AND_NODE_SIZE / 2 + Clickable::smallestPinSize / 2 + Clickable::smallestNodeSize);
+	this->simulationInputs[1].UpdateColor(sf::Color::Red);
 
-	this->shapes[3] = new sf::RectangleShape(sf::Vector2f(Clickable::pinSize, Clickable::pinSize));
-	this->shapes[3]->setPosition(xPos + Clickable::baseSize / 2 - Clickable::pinSize, yPos - Clickable::pinSize / 2);
-	this->shapes[3]->setFillColor(sf::Color::Red);
+	this->simulationOutputs[0].Init(new sf::CircleShape(Clickable::smallestPinSize));
+	this->simulationOutputs[0].Transform(this->basePosition.x + AND_NODE_SIZE / 2 - Clickable::smallestPinSize * 2, this->basePosition.y - Clickable::smallestPinSize);
+	this->simulationOutputs[0].UpdateColor(sf::Color::Red);
 }
 
 void andNode::Propagate(std::queue<NodeId_t>& toEvaluate)
@@ -34,27 +36,38 @@ void andNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 
 	printf("andNode::Propagate\n");
 
-	if (this->inputs[0].GetState() == Pin::State_t::HIGH)
-		this->shapes[1]->setFillColor(sf::Color::Green);
-	else
-		this->shapes[1]->setFillColor(sf::Color::Red);
-	if (this->inputs[1].GetState() == Pin::State_t::HIGH)
-		this->shapes[2]->setFillColor(sf::Color::Green);
-	else
-		this->shapes[2]->setFillColor(sf::Color::Red);
-
+	if (this->inputs[0].GetState() == Pin::State_t::LOW)
+	{
+		this->simulationInputs[0].UpdateColor(sf::Color::Red);
+		printf("	LOW\n");
+	}
+	else if (this->inputs[0].GetState() == Pin::State_t::HIGH)
+	{
+		this->simulationInputs[0].UpdateColor(sf::Color::Green);
+		printf("	HIGH\n");
+	}
+	if (this->inputs[1].GetState() == Pin::State_t::LOW)
+	{
+		this->simulationInputs[1].UpdateColor(sf::Color::Red);
+		printf("	LOW\n");
+	}
+	else if (this->inputs[1].GetState() == Pin::State_t::HIGH)
+	{
+		this->simulationInputs[1].UpdateColor(sf::Color::Green);
+		printf("	HIGH\n");
+	}
 
 	if (this->inputs[0].GetState() == Pin::State_t::HIGH &&
 		this->inputs[1].GetState() == Pin::State_t::HIGH)
 	{
 		isStateChanged = this->outputs[0].UpdateState(Pin::State_t::HIGH);
-		this->shapes[3]->setFillColor(sf::Color::Green);
+		this->simulationOutputs[0].UpdateColor(sf::Color::Green);
 		printf("	HIGH\n");
 	}
 	else
 	{
 		isStateChanged = this->outputs[0].UpdateState(Pin::State_t::LOW);
-		this->shapes[3]->setFillColor(sf::Color::Red);
+		this->simulationOutputs[0].UpdateColor(sf::Color::Red);
 		printf("	LOW\n");
 	}
 
@@ -69,7 +82,20 @@ void andNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 	}
 }
 
-void andNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo)
+void andNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("andNode::OnClick\n");
+}
+
+void andNode::Draw(sf::RenderWindow& window) const
+{
+	window.draw(*this->shape);
+	for (const auto& input : this->simulationInputs)
+	{
+		input.Draw(window);
+	}
+	for (const auto& output : this->simulationOutputs)
+	{
+		output.Draw(window);
+	}
 }
