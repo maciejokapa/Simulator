@@ -1,7 +1,7 @@
 #include "SimulationPin.h"
 
 SimulationPin::SimulationPin(void)
-	: Clickable(nullptr, 0, 0, 0)
+	: Clickable(nullptr)
 {}	
 
 void SimulationPin::Init(sf::Shape* shape)
@@ -9,22 +9,17 @@ void SimulationPin::Init(sf::Shape* shape)
 	this->shape = shape;
 }
 
-void SimulationPin::Transform(float xPos, float yPos)
-{
-	this->shape->setPosition(xPos, yPos);
-}
-
-void SimulationPin::UpdateColor(sf::Color color)
+void SimulationPin::UpdateColor(sf::Color color) const
 {
 	this->shape->setFillColor(color);
+}
+
+void SimulationPin::Transform(const sf::Vector2f& position) const
+{
+	this->shape->setPosition(position);
 }
 
 void SimulationPin::Draw(sf::RenderWindow& window) const
 {
 	window.draw(*this->shape);
-}
-
-void SimulationPin::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
-{
-	// pod³¹czanie
 }

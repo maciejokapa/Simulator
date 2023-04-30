@@ -2,7 +2,7 @@
 
 #include "InputNode.h"
 #include "OutputNode.h"
-#include "andNode.h"
+#include "AndNode.h"
 
 #include <stdio.h>
 
@@ -17,20 +17,20 @@ SimulationManager::SimulationManager(sf::RenderWindow& gameWindow) : window(game
     counter++;
     this->nodes[counter] = new OutputNode(counter, 350, 200);
     counter++;
-    this->nodes[counter] = new andNode(counter, 200, 200);
+    this->nodes[counter] = new AndNode(counter, 200, 200);
     counter++;
 
     /* TO DELETE */
     // input.out -> node.in
-    this->nodes[1]->outputs[0].Connect(4);
-    this->nodes[2]->outputs[0].Connect(4);
+    this->nodes[1]->simulationOutputs[0].pin.Connect(4);
+    this->nodes[2]->simulationOutputs[0].pin.Connect(4);
     // node.in -> input.out
-    this->nodes[4]->inputs[0].Connect(&this->nodes[1]->outputs[0]);
-    this->nodes[4]->inputs[1].Connect(&this->nodes[2]->outputs[0]);
+    this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
+    this->nodes[4]->simulationInputs[1].pin.Connect(&this->nodes[2]->simulationOutputs[0].pin);
     // node.out -> out.in
-    this->nodes[4]->outputs[0].Connect(3);
+    this->nodes[4]->simulationOutputs[0].pin.Connect(3);
     // out.in -> node.out
-    this->nodes[3]->inputs[0].Connect(&this->nodes[4]->outputs[0]);
+    this->nodes[3]->simulationInputs[0].pin.Connect(&this->nodes[4]->simulationOutputs[0].pin);
     /* TO DELETE */
 
     this->window.clear();

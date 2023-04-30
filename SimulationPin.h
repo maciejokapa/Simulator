@@ -8,10 +8,9 @@ public:
 	SimulationPin(void);
 
 	void Init(sf::Shape* shape);
-	void Transform(float xPos, float yPos);
-	void UpdateColor(sf::Color color);
+	void UpdateColor(sf::Color color) const;
 
 	void Draw(sf::RenderWindow& window) const;
-	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
+	void Transform(const sf::Vector2f& position) const;
 };
 
