@@ -20,27 +20,30 @@ AndNode::AndNode(NodeId_t nodeId, float xPos, float yPos)
 	this->simulationInputs[0].offset.x = this->basePosition.x - AND_NODE_SIZE / 2;
 	this->simulationInputs[0].offset.y = this->basePosition.y - AND_NODE_SIZE / 2 + SimulationNode::smallestPinSize / 2;
 	this->simulationInputs[0].pin.Transform(this->simulationInputs[0].offset);
-	this->simulationInputs[0].pin.UpdateColor(sf::Color::Red);
+	this->simulationInputs[0].pin.UpdateColor(sf::Color::Black);
 
 	this->simulationInputs[1].pin.Init(new sf::CircleShape(SimulationNode::smallestPinSize));
 	this->simulationInputs[1].offset.x = this->basePosition.x - AND_NODE_SIZE / 2;
 	this->simulationInputs[1].offset.y = this->basePosition.y - AND_NODE_SIZE / 2 + SimulationNode::smallestPinSize / 2 + SimulationNode::smallestNodeSize;
 	this->simulationInputs[1].pin.Transform(this->simulationInputs[1].offset);
-	this->simulationInputs[1].pin.UpdateColor(sf::Color::Red);
+	this->simulationInputs[1].pin.UpdateColor(sf::Color::Black);
 
 	this->simulationOutputs[0].pin.Init(new sf::CircleShape(SimulationNode::smallestPinSize));
 	this->simulationOutputs[0].offset.x = this->basePosition.x + AND_NODE_SIZE / 2 - SimulationNode::smallestPinSize * 2;
 	this->simulationOutputs[0].offset.y = this->basePosition.y - SimulationNode::smallestPinSize;
 	this->simulationOutputs[0].pin.Transform(this->simulationOutputs[0].offset);
-	this->simulationOutputs[0].pin.UpdateColor(sf::Color::Red);
+	this->simulationOutputs[0].pin.UpdateColor(sf::Color::Black);
 }
 
 void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 {
 	bool isStateChanged;
 	std::list<NodeId_t> tempList;
+	bool isNodeFullyConncted;
 
 	printf("AndNode::Propagate\n");
+	
+	isNodeFullyConncted = true;
 
 	if (this->simulationInputs[0].pin.GetState() == Pin::State_t::LOW)
 	{
@@ -52,6 +55,13 @@ void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 		this->simulationInputs[0].pin.UpdateColor(sf::Color::Green);
 		printf("	HIGH\n");
 	}
+	else if (this->simulationInputs[0].pin.GetState() == Pin::State_t::UNDEFINED)
+	{
+		this->simulationInputs[0].pin.UpdateColor(sf::Color::Black);
+		isNodeFullyConncted = false;
+		printf("	UNDEFINED\n");
+	}
+
 	if (this->simulationInputs[1].pin.GetState() == Pin::State_t::LOW)
 	{
 		this->simulationInputs[1].pin.UpdateColor(sf::Color::Red);
@@ -62,28 +72,37 @@ void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 		this->simulationInputs[1].pin.UpdateColor(sf::Color::Green);
 		printf("	HIGH\n");
 	}
-
-	if (this->simulationInputs[0].pin.GetState() == Pin::State_t::HIGH &&
-		this->simulationInputs[1].pin.GetState() == Pin::State_t::HIGH)
+	else if (this->simulationInputs[1].pin.GetState() == Pin::State_t::UNDEFINED)
 	{
-		isStateChanged = this->simulationOutputs[0].pin.UpdateState(Pin::State_t::HIGH);
-		this->simulationOutputs[0].pin.UpdateColor(sf::Color::Green);
-		printf("	HIGH\n");
-	}
-	else
-	{
-		isStateChanged = this->simulationOutputs[0].pin.UpdateState(Pin::State_t::LOW);
-		this->simulationOutputs[0].pin.UpdateColor(sf::Color::Red);
-		printf("	LOW\n");
+		this->simulationInputs[1].pin.UpdateColor(sf::Color::Black);
+		isNodeFullyConncted = false;
+		printf("	UNDEFINED\n");
 	}
 
-	if (isStateChanged)
+	if (isNodeFullyConncted)
 	{
-		printf("	state changed\n");
-		this->simulationOutputs[0].pin.GetConnectedObjects(tempList);
-		for (const auto& element : tempList)
+		if (this->simulationInputs[0].pin.GetState() == Pin::State_t::HIGH &&
+			this->simulationInputs[1].pin.GetState() == Pin::State_t::HIGH)
 		{
-			toEvaluate.push(element);
+			isStateChanged = this->simulationOutputs[0].pin.UpdateState(Pin::State_t::HIGH);
+			this->simulationOutputs[0].pin.UpdateColor(sf::Color::Green);
+			printf("	HIGH\n");
+		}
+		else
+		{
+			isStateChanged = this->simulationOutputs[0].pin.UpdateState(Pin::State_t::LOW);
+			this->simulationOutputs[0].pin.UpdateColor(sf::Color::Red);
+			printf("	LOW\n");
+		}
+
+		if (isStateChanged)
+		{
+			printf("	state changed\n");
+			this->simulationOutputs[0].pin.GetConnectedObjects(tempList);
+			for (const auto& element : tempList)
+			{
+				toEvaluate.push(element);
+			}
 		}
 	}
 }
@@ -91,4 +110,8 @@ void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 void AndNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("AndNode::OnClick\n");
+	if (!SimulationNode::CommonDeleteRequest(event, clickInfo))
+	{
+		(void)SimulationNode::CommonConnectRequest(event, clickInfo);
+	}
 }

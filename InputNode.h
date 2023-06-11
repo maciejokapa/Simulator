@@ -4,6 +4,8 @@
 
 class InputNode : public SimulationNode
 {
+private:
+
 public:
 	InputNode(NodeId_t nodeId, float xPos, float yPos);
 

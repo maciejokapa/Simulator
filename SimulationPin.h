@@ -5,7 +5,7 @@
 class SimulationPin : public Clickable
 {
 public:
-	SimulationPin(void);
+	SimulationPin(sf::Shape* shape = nullptr);
 
 	void Init(sf::Shape* shape);
 	void UpdateColor(sf::Color color) const;

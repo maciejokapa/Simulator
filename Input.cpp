@@ -29,10 +29,7 @@ void Input::Connect(Pin* connection)
 	this->connection = connection;
 }
 
-void Input::Disonnect(Pin* connection)
+void Input::Disonnect(void)
 {
-	if (connection == this->connection)
-	{
-		this->connection = nullptr;
-	}
+	this->connection = nullptr;
 }

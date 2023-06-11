@@ -1,7 +1,6 @@
 #include "SimulationPin.h"
 
-SimulationPin::SimulationPin(void)
-	: Clickable(nullptr)
+SimulationPin::SimulationPin(sf::Shape* shape) : Clickable(shape)
 {}	
 
 void SimulationPin::Init(sf::Shape* shape)

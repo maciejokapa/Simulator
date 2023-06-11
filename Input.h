@@ -15,6 +15,6 @@ public:
 	Pin::State_t GetState(void) const;
 	/* Modyfikuje element connection */
 	void Connect(Pin* connection);
-	void Disonnect(Pin* connection);
+	void Disonnect(void);
 };
 

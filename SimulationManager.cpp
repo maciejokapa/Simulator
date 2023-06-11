@@ -11,6 +11,9 @@ uint16_t SimulationManager::counter = 1u;
 
 SimulationManager::SimulationManager(sf::RenderWindow& gameWindow) : window(gameWindow)
 {
+    this->state = SimulationManagerState_t::IDLE;
+    memset(&this->internalClickInfo, 0u, sizeof(ClickInfo_t));
+
     this->nodes[counter] = new InputNode(counter, 50, 150);
     counter++;
     this->nodes[counter] = new InputNode(counter, 50, 250);
@@ -22,23 +25,16 @@ SimulationManager::SimulationManager(sf::RenderWindow& gameWindow) : window(game
 
     /* TO DELETE */
     // input.out -> node.in
-    this->nodes[1]->simulationOutputs[0].pin.Connect(4);
-    this->nodes[2]->simulationOutputs[0].pin.Connect(4);
+    //this->nodes[1]->simulationOutputs[0].pin.Connect(4);
+    //this->nodes[2]->simulationOutputs[0].pin.Connect(4);
     // node.in -> input.out
-    this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
-    this->nodes[4]->simulationInputs[1].pin.Connect(&this->nodes[2]->simulationOutputs[0].pin);
+    //this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
+    //this->nodes[4]->simulationInputs[1].pin.Connect(&this->nodes[2]->simulationOutputs[0].pin);
     // node.out -> out.in
-    this->nodes[4]->simulationOutputs[0].pin.Connect(3);
+    //this->nodes[4]->simulationOutputs[0].pin.Connect(3);
     // out.in -> node.out
-    this->nodes[3]->simulationInputs[0].pin.Connect(&this->nodes[4]->simulationOutputs[0].pin);
+    //this->nodes[3]->simulationInputs[0].pin.Connect(&this->nodes[4]->simulationOutputs[0].pin);
     /* TO DELETE */
-
-    this->window.clear();
-    for (const auto node : this->nodes)
-    {
-        node.second->Draw(this->window);
-    }
-    this->window.display();
 }
 
 SimulationManager* SimulationManager::GetInstance(sf::RenderWindow& gameWindow)
@@ -54,48 +50,131 @@ void SimulationManager::Run(void)
 {
     ClickInfo_t clickInfo;
     sf::Event event;
-
-    clickInfo.type = ClickType_t::NONE;
     
     while (window.pollEvent(event))
     {
-        if (event.type == sf::Event::Closed)
-            window.close();
 
-        if (event.type == sf::Event::MouseButtonPressed)
+/*-------------------------------------------------------------------*/
+/*------------------- Handle special events -------------------------*/
+/*-------------------------------------------------------------------*/
+
+        if ((event.type == sf::Event::Closed) ||
+            ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
+        {
+            window.close();
+        }
+
+
+/*-------------------------------------------------------------------*/
+/*--------------------- Handle mouse clicks -------------------------*/
+/*-------------------------------------------------------------------*/
+
+        memset(&clickInfo, 0u, sizeof(ClickInfo_t));
+        if (sf::Event::MouseButtonPressed == event.type)
         {
             for (const auto node : this->nodes)
             {
-                printf("check node %u\n", node.first);
                 if (node.second->IsClicked(event))
                 {
-                    printf("CICKED\n");
                     node.second->OnClick(event, clickInfo);
                     break;
                 }
             }
         }
 
-        switch (clickInfo.type)
+/*-------------------------------------------------------------------*/
+/*------------------- Process simulation logic ----------------------*/
+/*-------------------------------------------------------------------*/
+
+        switch (this->state)
         {
-            case ClickType_t::TOGGLE:
+            case SimulationManagerState_t::IDLE:
             {
-                this->toEvaluate.push(clickInfo.nodeId);
-                this->PropagateSignal();
+                switch (clickInfo.type)
+                {
+                    case SimulationEventType_t::TOGGLE:
+                    {
+                        this->toEvaluate.push(clickInfo.nodeId);
+                        this->PropagateSignal();
+                        break;
+                    }
+                    case SimulationEventType_t::CONNECT:
+                    {
+                        memcpy(&this->internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
+                        this->state = SimulationManagerState_t::CONNECT;
+                        break;
+                    }
+                    case SimulationEventType_t::MOVE:
+                    {
+                        // save nodeId
+                        // save mouse coords
+                        // change state to SimulationManagerState_t::MOVE
+                        break;
+                    }
+                    case SimulationEventType_t::DELETE:
+                    {
+                        // delete node
+                        // delete connections with connected nodes
+                        // push to toEvaluate all of the nodes that were connected with theirs inputs with deleted node
+                        // call PropagateSignal()
+                        break;
+                    }
+                    default:
+                        break;
+                }
                 break;
             }
-            case ClickType_t::CONNECT:
+            case SimulationManagerState_t::CONNECT:
             {
+                if (sf::Mouse::Button::Right == event.mouseButton.button)
+                {
+                    memset(&this->internalClickInfo, 0u, sizeof(clickInfo));
+                    this->state = SimulationManagerState_t::IDLE;
+                }
+                else
+                {
+                    if (SimulationEventType_t::CONNECT == clickInfo.type)
+                    {
+                        //this->nodes[1]->simulationOutputs[0].pin.Connect(4);
+                        //this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
+
+                        if ((internalClickInfo.requestInfo.connectRequest.isInput && !clickInfo.requestInfo.connectRequest.isInput) ||
+                            (!internalClickInfo.requestInfo.connectRequest.isInput && clickInfo.requestInfo.connectRequest.isInput))
+                        {
+                            if (internalClickInfo.requestInfo.connectRequest.isInput)
+                            {
+                                (*(SimulationInput*)internalClickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)clickInfo.requestInfo.connectRequest.pin);
+                                (*(SimulationOutput*)clickInfo.requestInfo.connectRequest.pin).Connect(internalClickInfo.nodeId);
+                                this->toEvaluate.push(internalClickInfo.nodeId);
+                            }
+                            else
+                            {
+                                (*(SimulationInput*)clickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin);
+                                (*(SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin).Connect(clickInfo.nodeId);
+                                this->toEvaluate.push(clickInfo.nodeId);
+                            }
+
+                            this->PropagateSignal();
+
+                            this->state = SimulationManagerState_t::IDLE;
+                            memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
+                        }
+                    }
+                }
 
                 break;
             }
-            case ClickType_t::MOVE:
+            case SimulationManagerState_t::MOVE:
             {
+                if (sf::Event::MouseButtonReleased == event.type)
+                {
+                    // check if current coords are valid
+                    // if not return to saved coords
+                    // if valid leave in current place
 
-                break;
-            }
-            case ClickType_t::DELETE:
-            {
+                    // reset 
+                    // change to idle
+                }
 
                 break;
             }
@@ -103,12 +182,20 @@ void SimulationManager::Run(void)
                 break;
         }
 
-        this->window.clear();
+/*-------------------------------------------------------------------*/
+/*------------------------ Draw -------------------------------------*/
+/*-------------------------------------------------------------------*/
+
+        this->window.clear(sf::Color(82, 78, 72));
         for (const auto node : this->nodes)
         {
             node.second->Draw(this->window);
         }
         this->window.display();
+
+/*-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------*/
     }
 }
 

@@ -10,12 +10,12 @@
 class SimulationNode : public Clickable
 {
 private:
-	template<typename Pin>
-	class PinInfo_t {
+	template<typename PinType_T>
+	class PinInfo {
 	public:
-		Pin pin;
+		PinType_T pin;
 		sf::Vector2f offset;
-		PinInfo_t(Pin pin, const sf::Vector2f& offset) : pin(pin), offset(offset) {}
+		PinInfo(PinType_T pin, const sf::Vector2f& offset) : pin(pin), offset(offset) {}
 	};
 
 protected:
@@ -27,11 +27,15 @@ protected:
 	static const float smallestNodeSize;
 	static const float smallestPinSize;
 
+	bool CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	bool CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	bool CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+
 public:
 	//TEMPOARORY
 	//MOVE IT TO PROTECTED
-	std::vector<PinInfo_t<SimulationInput>> simulationInputs;
-	std::vector<PinInfo_t<SimulationOutput>> simulationOutputs;
+	std::vector<PinInfo<SimulationInput>> simulationInputs;
+	std::vector<PinInfo<SimulationOutput>> simulationOutputs;
 
 
 	SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, sf::Shape* shape, float xPos, float yPos, float size);

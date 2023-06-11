@@ -11,6 +11,12 @@
 class SimulationManager
 {
 private:
+    enum class SimulationManagerState_t {
+        IDLE,
+        CONNECT,
+        MOVE
+
+    };
 
 /* SimulationManager is a singleton */
     SimulationManager(sf::RenderWindow& gameWindow);
@@ -24,6 +30,9 @@ private:
     std::queue<NodeId_t> toEvaluate;
 
     sf::RenderWindow& window;
+
+    SimulationManagerState_t state;
+    ClickInfo_t internalClickInfo;
 
 public:
 /* SimulationManager is a singleton */

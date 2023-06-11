@@ -7,7 +7,7 @@
 
 #define OUTPUT_NODE_IN_LEN		(1u)
 #define OUTPUT_NODE_OUT_LEN		(0u)
-#define OUTPUT_NODE_SIZE		(1.0f * SimulationNode::smallestNodeSize)
+#define OUTPUT_NODE_SIZE		(2.0f * SimulationNode::smallestNodeSize)
 
 OutputNode::OutputNode(NodeId_t nodeId, float xPos, float yPos)
 	: SimulationNode(nodeId, OUTPUT_NODE_IN_LEN, OUTPUT_NODE_OUT_LEN, new sf::RectangleShape(sf::Vector2f(OUTPUT_NODE_SIZE, OUTPUT_NODE_SIZE)), xPos, yPos, OUTPUT_NODE_SIZE)
@@ -19,7 +19,7 @@ OutputNode::OutputNode(NodeId_t nodeId, float xPos, float yPos)
 	this->simulationInputs[0].offset.x = this->basePosition.x - OUTPUT_NODE_SIZE / 2;
 	this->simulationInputs[0].offset.y = this->basePosition.y - SimulationNode::smallestPinSize;
 	this->simulationInputs[0].pin.Transform(this->simulationInputs[0].offset);
-	this->simulationInputs[0].pin.UpdateColor(sf::Color::Red);
+	this->simulationInputs[0].pin.UpdateColor(sf::Color::Black);
 }
 
 void OutputNode::Propagate(std::queue<NodeId_t>& toEvaluate)
@@ -37,9 +37,18 @@ void OutputNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 		this->simulationInputs[0].pin.UpdateColor(sf::Color::Green);
 		printf("	HIGH\n");
 	}
+	else if (this->simulationInputs[0].pin.GetState() == Pin::State_t::UNDEFINED)
+	{
+		this->simulationInputs[0].pin.UpdateColor(sf::Color::Black);
+		printf("	UNDEFINED\n");
+	}
 }
 
 void OutputNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("OutputNode::OnClick\n");
+	if (!SimulationNode::CommonDeleteRequest(event, clickInfo))
+	{
+		(void)SimulationNode::CommonConnectRequest(event, clickInfo);
+	}
 }
