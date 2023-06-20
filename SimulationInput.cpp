@@ -19,6 +19,31 @@ void SimulationInput::Disonnect(void)
 	this->Input::Disonnect();
 }
 
+void SimulationInput::Update(void)
+{
+	switch (this->GetState())
+	{
+		case Pin::State_t::LOW:
+		{
+			this->UpdateColor(sf::Color::Red);
+			break;
+		}
+
+		case Pin::State_t::HIGH:
+		{
+			this->UpdateColor(sf::Color::Green);
+			break;
+		}
+
+		case Pin::State_t::UNDEFINED:
+		{
+			this->UpdateColor(sf::Color::Black);
+			break;
+		}
+
+	}
+}
+
 void SimulationInput::Draw(sf::RenderWindow& window) const
 {
 	this->SimulationPin::Draw(window);

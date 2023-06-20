@@ -5,8 +5,8 @@
 class Input
 {
 private:
-
 	Pin* connection;
+
 public:
 	Input(Pin* initialConnection = nullptr);
 	/* Sprawdzenie czy input jest po³¹czony */

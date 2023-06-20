@@ -9,15 +9,6 @@
 
 class SimulationNode : public Clickable
 {
-private:
-	template<typename PinType_T>
-	class PinInfo {
-	public:
-		PinType_T pin;
-		sf::Vector2f offset;
-		PinInfo(PinType_T pin, const sf::Vector2f& offset) : pin(pin), offset(offset) {}
-	};
-
 protected:
 	const NodeId_t id;
 
@@ -34,11 +25,15 @@ protected:
 public:
 	//TEMPOARORY
 	//MOVE IT TO PROTECTED
-	std::vector<PinInfo<SimulationInput>> simulationInputs;
-	std::vector<PinInfo<SimulationOutput>> simulationOutputs;
-
+	std::vector<SimulationInput> simulationInputs;
+	std::vector<SimulationOutput> simulationOutputs;
+	//TEMPOARORY
 
 	SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, sf::Shape* shape, float xPos, float yPos, float size);
+
+	bool IsClicked(sf::Event& event) const;
+
+	void UpdatePins(void);
 
 	void Draw(sf::RenderWindow& window) const;
 	void Transform(const sf::Vector2f& position) const;

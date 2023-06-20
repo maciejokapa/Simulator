@@ -51,7 +51,7 @@ void SimulationManager::Run(void)
     ClickInfo_t clickInfo;
     sf::Event event;
     
-    while (window.pollEvent(event))
+    while (window.waitEvent(event))
     {
 
 /*-------------------------------------------------------------------*/

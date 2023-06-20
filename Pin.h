@@ -16,6 +16,5 @@ public:
 	Pin(State_t state);
 
 protected:
-	/* Aktualny stan ouptutu */
 	State_t currentState;
 };
