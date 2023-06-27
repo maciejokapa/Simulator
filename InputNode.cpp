@@ -12,7 +12,7 @@
 InputNode::InputNode(NodeId_t nodeId, float xPos, float yPos)
 	: SimulationNode(nodeId, INPUT_NODE_IN_LEN, INPUT_NODE_OUT_LEN, new sf::RectangleShape(sf::Vector2f(INPUT_NODE_SIZE, INPUT_NODE_SIZE)), xPos, yPos, INPUT_NODE_SIZE)
 {
-	this->simulationInputs[0].Init(0.0f, INPUT_NODE_SIZE, INPUT_NODE_IN_LEN, 0u);
+	this->simulationInputs[0].Init(SimulationNode::smallestPinSize, INPUT_NODE_SIZE, INPUT_NODE_IN_LEN, 0u);
 	this->simulationInputs[0].ChangeShape(new sf::RectangleShape(sf::Vector2f(SimulationNode::smallestPinSize * 2, SimulationNode::smallestPinSize * 2)), sf::Color::Yellow);
 	
 	this->simulationOutputs[0].Init(SimulationNode::smallestPinSize, INPUT_NODE_SIZE, INPUT_NODE_OUT_LEN, 0u, false);
@@ -57,17 +57,22 @@ void InputNode::UpdatePins(void)
 void InputNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("InputNode::OnClick\n");
-	if (!SimulationNode::CommonDeleteRequest(event, clickInfo))
+	if (SimulationEventType_t::DELETE != SimulationNode::CommonDeleteRequest(event, clickInfo))
 	{
-		if (this->simulationInputs[0].IsClicked(event))
-		{
-			clickInfo.type = SimulationEventType_t::TOGGLE;
-			clickInfo.nodeId = this->id;
-			printf("CSTOM TOGGLE REQUEST\n");
-		}
-		else
+		if (SimulationEventType_t::TOGGLE != this->CustomToggleRequest(event, clickInfo))
 		{
 			(void)SimulationNode::CommonConnectRequest(event, clickInfo);
 		}
 	} 
+}
+
+SimulationEventType_t InputNode::CustomToggleRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+{
+	if (this->simulationInputs[0].IsClicked(event))
+	{
+		clickInfo.type = SimulationEventType_t::TOGGLE;
+		clickInfo.nodeId = this->id;
+	}
+
+	return clickInfo.type;
 }

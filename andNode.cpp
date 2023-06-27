@@ -73,7 +73,7 @@ void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 void AndNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("AndNode::OnClick\n");
-	if (!SimulationNode::CommonDeleteRequest(event, clickInfo))
+	if (SimulationEventType_t::DELETE != SimulationNode::CommonDeleteRequest(event, clickInfo))
 	{
 		(void)SimulationNode::CommonConnectRequest(event, clickInfo);
 	}

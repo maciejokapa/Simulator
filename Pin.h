@@ -9,6 +9,7 @@ public:
 		LOW,
 		HIGH,
 		UNDEFINED
+
 	};
 
 	State_t GetState(void) const;

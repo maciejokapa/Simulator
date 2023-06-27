@@ -1,5 +1,7 @@
 #include "SimulationOutput.h"
 
+#include <SFML/Graphics/CircleShape.hpp>
+
 #include <stdio.h>
 
 SimulationOutput::SimulationOutput(void) : Output(), SimulationPin()
@@ -33,6 +35,8 @@ bool SimulationOutput::Propagate(Pin::State_t state)
 {
 	bool isStateChanged;
 
+	isStateChanged = false;
+
 	switch (state)
 	{
 		case Pin::State_t::LOW:
@@ -60,7 +64,19 @@ bool SimulationOutput::Propagate(Pin::State_t state)
 	return isStateChanged;
 }
 
+const sf::Vector2f& SimulationOutput::GetPosition() const
+{
+	return this->shape->getPosition();
+}
+
+const float SimulationOutput::GetSize() const
+{
+	return ((sf::CircleShape*)this->shape)->getRadius();
+}
+
 void SimulationOutput::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
-	printf("SimulationOutput::OnClick");
+	clickInfo.type = SimulationEventType_t::CONNECT;
+	clickInfo.requestInfo.connectRequest.isInput = false;
+	clickInfo.requestInfo.connectRequest.pin = (void*)this;
 }

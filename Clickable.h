@@ -15,9 +15,9 @@ public:
 	Clickable(sf::Shape* shape);
 
 	bool IsClicked(sf::Event& event) const;
+	void Draw(sf::RenderWindow& window) const;
+	void Transform(const sf::Vector2f& position) const;
 
-	virtual void Draw(sf::RenderWindow& window) const = 0;
 	virtual void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const = 0;
-	virtual void Transform(const sf::Vector2f& position) const = 0;
 };
 

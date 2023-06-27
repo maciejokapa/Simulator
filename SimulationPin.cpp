@@ -35,10 +35,5 @@ void SimulationPin::UpdateColor(sf::Color color) const
 
 void SimulationPin::Transform(const sf::Vector2f& position) const
 {
-	this->shape->setPosition(this->shape->getPosition() + position);
-}
-
-void SimulationPin::Draw(sf::RenderWindow& window) const
-{
-	window.draw(*this->shape);
+	this->Clickable::Transform(this->shape->getPosition() + position);
 }

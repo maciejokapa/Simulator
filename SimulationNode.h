@@ -18,9 +18,9 @@ protected:
 	static const float smallestNodeSize;
 	static const float smallestPinSize;
 
-	bool CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
-	bool CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
-	bool CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	SimulationEventType_t CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	SimulationEventType_t CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	SimulationEventType_t CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
 
 public:
 	//TEMPOARORY

@@ -12,6 +12,7 @@ enum class SimulationEventType_t {
 	NONE,
 	TOGGLE,
 	CONNECT,
+	DISCONNECT,
 	MOVE,
 	DELETE
 

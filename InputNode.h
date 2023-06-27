@@ -5,7 +5,7 @@
 class InputNode : public SimulationNode
 {
 private:
-
+	SimulationEventType_t CustomToggleRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
 public:
 	InputNode(NodeId_t nodeId, float xPos, float yPos);
 

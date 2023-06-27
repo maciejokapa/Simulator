@@ -1,5 +1,7 @@
 #include "SimulationNode.h"
 
+#include "SFML/Window/Keyboard.hpp"
+
 #include <iostream>
 
 const float SimulationNode::smallestNodeSize = (float)sf::VideoMode::getDesktopMode().height / 30.0f;
@@ -18,9 +20,7 @@ bool SimulationNode::IsClicked(sf::Event& event) const
 {
 	bool result;
 
-	result = false;
-
-	result |= this->Clickable::IsClicked(event);
+	result = this->Clickable::IsClicked(event);
 	for (const auto& input : this->simulationInputs)
 	{
 		result |= input.IsClicked(event);
@@ -35,7 +35,7 @@ bool SimulationNode::IsClicked(sf::Event& event) const
 
 void SimulationNode::Draw(sf::RenderWindow& window) const
 {
-	window.draw(*this->shape);
+	this->Clickable::Draw(window);
 	for (const auto& input : this->simulationInputs)
 	{
 		input.Draw(window);
@@ -48,7 +48,7 @@ void SimulationNode::Draw(sf::RenderWindow& window) const
 
 void SimulationNode::Transform(const sf::Vector2f& position) const
 {
-	this->shape->setPosition(position);
+	this->Clickable::Transform(position);
 	for (const auto& input : this->simulationInputs)
 	{
 		input.Transform(position);
@@ -71,32 +71,41 @@ void SimulationNode::UpdatePins(void)
 	}
 }
 
-bool SimulationNode::CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+SimulationEventType_t SimulationNode::CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("imulationNode::CommonDeleteRequest\n");
-	bool result;
+	bool pinsClicked;;
 
-	result = false;
+	pinsClicked = false;
 
-	if (event.mouseButton.button == sf::Mouse::Right)
+	for (const auto& input : this->simulationInputs)
 	{
-		clickInfo.type = SimulationEventType_t::DELETE;
-		clickInfo.nodeId = this->id;
-
-		result = true;
-		printf("TRUE\n");
+		pinsClicked |= input.IsClicked(event);
+	}
+	for (const auto& output : this->simulationOutputs)
+	{
+		pinsClicked |= output.IsClicked(event);
 	}
 
-	return result;
+	if (!pinsClicked)
+	{
+		if ((event.mouseButton.button == sf::Mouse::Right) &&
+			(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)))
+		{
+			clickInfo.type = SimulationEventType_t::DELETE;
+			clickInfo.nodeId = this->id;
+
+			printf("TRUE\n");
+		}
+	}
+
+	return clickInfo.type;
 }
 
-bool SimulationNode::CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+SimulationEventType_t SimulationNode::CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("imulationNode::CommonConnectRequest\n");
-	bool result;
 	uint8_t idx;
-
-	result = false;
 
 	if (event.mouseButton.button == sf::Mouse::Left)
 	{
@@ -105,28 +114,24 @@ bool SimulationNode::CommonConnectRequest(sf::Event& event, ClickInfo_t& clickIn
 		{
 			if (input.IsClicked(event))
 			{
-				clickInfo.requestInfo.connectRequest.isInput = true;
+				input.OnClick(event, clickInfo);
 				clickInfo.requestInfo.connectRequest.pinId = idx;
-				clickInfo.requestInfo.connectRequest.pin = (void*)&input;
-
-				result = true;
+				clickInfo.nodeId = this->id;
 				break;
 			}
 			idx++;
 		}
 
-		if (!result)
+		if (SimulationEventType_t::NONE == clickInfo.type)
 		{
 			idx = 0u;
 			for (const auto& output : this->simulationOutputs)
 			{
 				if (output.IsClicked(event))
 				{
-					clickInfo.requestInfo.connectRequest.isInput = false;
+					output.OnClick(event, clickInfo);
 					clickInfo.requestInfo.connectRequest.pinId = idx;
-					clickInfo.requestInfo.connectRequest.pin = (void*)&output;
-
-					result = true;
+					clickInfo.nodeId = this->id;
 					break;
 				}
 				idx++;
@@ -134,27 +139,32 @@ bool SimulationNode::CommonConnectRequest(sf::Event& event, ClickInfo_t& clickIn
 		}
 	}
 
-	if (result)
-	{
-		clickInfo.type = SimulationEventType_t::CONNECT;
-		clickInfo.nodeId = this->id;
-	}
-
-	return result;
+	return clickInfo.type;
 }
 
-bool SimulationNode::CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+SimulationEventType_t SimulationNode::CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("imulationNode::CommonMoveRequest\n");
-	bool result;
+	bool pinsClicked;
 
-	result = false;
+	pinsClicked = false;
 
-	if (event.mouseButton.button == sf::Mouse::Left)
+	for (const auto& input : this->simulationInputs)
 	{
-
+		pinsClicked |= input.IsClicked(event);
+	}
+	for (const auto& output : this->simulationOutputs)
+	{
+		pinsClicked |= output.IsClicked(event);
 	}
 
-	return result;
-}
+	if (!pinsClicked)
+	{
+		if (event.mouseButton.button == sf::Mouse::Left)
+		{
 
+		}
+	}
+
+	return clickInfo.type;
+}
