@@ -20,19 +20,18 @@ OutputNode::OutputNode(NodeId_t nodeId, float xPos, float yPos)
 	this->UpdatePins();
 }
 
-void OutputNode::Propagate(std::queue<NodeId_t>& toEvaluate)
+bool OutputNode::Propagate(std::list<NodeId_t>& toEvaluate)
 {
 	printf("OutputNode::Propagate\n");
 	(void)toEvaluate;
 
 	this->UpdatePins();
+
+	return true;
 }
 
 void OutputNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("OutputNode::OnClick\n");
-	if (SimulationEventType_t::DELETE != SimulationNode::CommonDeleteRequest(event, clickInfo))
-	{
-		(void)SimulationNode::CommonConnectRequest(event, clickInfo);
-	}
+	(void)SimulationNode::CommonRequest(event, clickInfo);
 }

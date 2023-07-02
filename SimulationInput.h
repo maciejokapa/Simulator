@@ -9,6 +9,10 @@ class SimulationInput : public Input, public SimulationPin
 {
 private:
 	SimulationWire* wire;
+	SimulationOutput* connection;
+	float connectionSize;
+
+	bool IsWireClicked(sf::Event& event) const;
 
 public:
 	SimulationInput(void);
@@ -16,6 +20,7 @@ public:
 	void Connect(SimulationOutput* connection);
 	void Disonnect(void);
 
+	void UpdateWire(void);
 	void Update(void);
 
 	void Transform(const sf::Vector2f& position) const;

@@ -21,7 +21,8 @@ private:
 /* SimulationManager is a singleton */
     SimulationManager(sf::RenderWindow& gameWindow);
     
-    void PropagateSignal(void);
+    void PropagateSignal(NodeId_t nodeId);
+    void PropagateSignalSingleStep(NodeId_t nodeId);
 
     static SimulationManager* simManager;
     static uint16_t counter;

@@ -94,8 +94,7 @@ void SimulationManager::Run(void)
                 {
                     case SimulationEventType_t::TOGGLE:
                     {
-                        this->toEvaluate.push(clickInfo.nodeId);
-                        this->PropagateSignal();
+                        this->PropagateSignal(clickInfo.nodeId);
                         break;
                     }
                     case SimulationEventType_t::CONNECT:
@@ -106,9 +105,8 @@ void SimulationManager::Run(void)
                     }
                     case SimulationEventType_t::MOVE:
                     {
-                        // save nodeId
-                        // save mouse coords
-                        // change state to SimulationManagerState_t::MOVE
+                        memcpy(&this->internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
+                        this->state = SimulationManagerState_t::MOVE;
                         break;
                     }
                     case SimulationEventType_t::DELETE:
@@ -145,16 +143,14 @@ void SimulationManager::Run(void)
                             {
                                 (*(SimulationInput*)internalClickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)clickInfo.requestInfo.connectRequest.pin);
                                 (*(SimulationOutput*)clickInfo.requestInfo.connectRequest.pin).Connect(internalClickInfo.nodeId);
-                                this->toEvaluate.push(internalClickInfo.nodeId);
+                                this->PropagateSignal(internalClickInfo.nodeId);
                             }
                             else
                             {
                                 (*(SimulationInput*)clickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin);
                                 (*(SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin).Connect(clickInfo.nodeId);
-                                this->toEvaluate.push(clickInfo.nodeId);
+                                this->PropagateSignal(clickInfo.nodeId);
                             }
-
-                            this->PropagateSignal();
 
                             this->state = SimulationManagerState_t::IDLE;
                             memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
@@ -166,14 +162,16 @@ void SimulationManager::Run(void)
             }
             case SimulationManagerState_t::MOVE:
             {
+                this->nodes[internalClickInfo.nodeId]->Transform(sf::Vector2f((float)event.mouseMove.x, (float)event.mouseMove.y));
+                this->PropagateSignalSingleStep(internalClickInfo.nodeId);
+
                 if (sf::Event::MouseButtonReleased == event.type)
                 {
-                    // check if current coords are valid
-                    // if not return to saved coords
-                    // if valid leave in current place
+                    this->nodes[internalClickInfo.nodeId]->Transform(sf::Vector2f((float)event.mouseButton.x, (float)event.mouseButton.y));
 
-                    // reset 
-                    // change to idle
+                    this->PropagateSignalSingleStep(internalClickInfo.nodeId);
+                    this->state = SimulationManagerState_t::IDLE;
+                    memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
                 }
 
                 break;
@@ -199,11 +197,40 @@ void SimulationManager::Run(void)
     }
 }
 
-void SimulationManager::PropagateSignal(void)
+void SimulationManager::PropagateSignal(NodeId_t nodeId)
 {
+    std::list<NodeId_t> tempList;
+
+    this->toEvaluate.push(nodeId);
     while (!this->toEvaluate.empty())
     {
-        this->nodes[this->toEvaluate.front()]->Propagate(this->toEvaluate);
+        if (this->nodes[this->toEvaluate.front()]->Propagate(tempList))
+        {
+            while (!tempList.empty())
+            {
+                this->toEvaluate.push(tempList.front());
+                tempList.pop_front();
+            }
+        }
         this->toEvaluate.pop();
+    } 
+}
+
+void SimulationManager::PropagateSignalSingleStep(NodeId_t nodeId)
+{
+    std::list<NodeId_t> dummyList;
+    std::list<NodeId_t> tempList;
+
+    this->toEvaluate.push(nodeId);
+    this->nodes[this->toEvaluate.front()]->Propagate(tempList);
+    for (const auto& element : tempList)
+    {
+        this->toEvaluate.push(element);
     }
+
+    while (!this->toEvaluate.empty())
+    {
+        (void)this->nodes[this->toEvaluate.front()]->Propagate(dummyList);
+        this->toEvaluate.pop();
+    } 
 }

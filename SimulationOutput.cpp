@@ -76,7 +76,10 @@ const float SimulationOutput::GetSize() const
 
 void SimulationOutput::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
-	clickInfo.type = SimulationEventType_t::CONNECT;
-	clickInfo.requestInfo.connectRequest.isInput = false;
-	clickInfo.requestInfo.connectRequest.pin = (void*)this;
+	if (event.mouseButton.button == sf::Mouse::Left)
+	{
+		clickInfo.type = SimulationEventType_t::CONNECT;
+		clickInfo.requestInfo.connectRequest.isInput = false;
+		clickInfo.requestInfo.connectRequest.pin = (void*)this;
+	}
 }

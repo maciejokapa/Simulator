@@ -4,6 +4,8 @@
 
 class SimulationPin : public Clickable
 {
+private:
+	sf::Vector2f offsetPosition;
 protected:
 	void UpdateColor(sf::Color color) const;
 

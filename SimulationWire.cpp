@@ -34,6 +34,11 @@ void SimulationWire::Update(Pin::State_t state) const
 	}
 }
 
+void SimulationWire::Transform(const sf::Vector2f& position) const
+{
+	this->Clickable::Transform(position);
+}
+
 void SimulationWire::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("SimulationWire::OnClick");

@@ -18,9 +18,7 @@ protected:
 	static const float smallestNodeSize;
 	static const float smallestPinSize;
 
-	SimulationEventType_t CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
-	SimulationEventType_t CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
-	SimulationEventType_t CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	SimulationEventType_t CommonRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
 
 public:
 	//TEMPOARORY
@@ -38,6 +36,6 @@ public:
 	void Draw(sf::RenderWindow& window) const;
 	void Transform(const sf::Vector2f& position) const;
 
-	virtual void Propagate(std::queue<NodeId_t>& toEvaluate) = 0;
+	virtual bool Propagate(std::list<NodeId_t>&) = 0;
 };
 

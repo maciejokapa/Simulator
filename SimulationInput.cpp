@@ -7,6 +7,8 @@
 SimulationInput::SimulationInput(void) : Input(), SimulationPin()
 {
 	this->wire = nullptr;
+	this->connection = nullptr;
+	this->connectionSize = 0.0f;
 }
 
 void SimulationInput::Connect(SimulationOutput* connection)
@@ -17,10 +19,26 @@ void SimulationInput::Connect(SimulationOutput* connection)
 	const float length = sqrtf(offset.x * offset.x + offset.y * offset.y);
 
 	this->Input::Connect(connection);
+	this->connection = connection;
+	this->connectionSize = size;
 	this->wire = new SimulationWire(new sf::RectangleShape(sf::Vector2f(length, size)));
+
 	this->wire->Transform(sf::Vector2f(position.x + size / 2, position.y + size / 2));
-	this->wire->Rotate(atan2f(offset.y, offset.x) * 180.0f / (atan(1.0) * 4));
+	this->wire->Rotate(atan2f(offset.y, offset.x) * 180.0f / (atanf(1.0) * 4));
 }
+
+void SimulationInput::UpdateWire(void)
+{
+	const float size = this->connection->GetSize();
+	const sf::Vector2f position = this->connection->GetPosition();
+	const sf::Vector2f offset = this->shape->getPosition() - position;
+	const float length = sqrtf(offset.x * offset.x + offset.y * offset.y);
+
+	this->wire->ChangeShape(new sf::RectangleShape(sf::Vector2f(length, size)), (this->GetState() == Pin::State_t::LOW) ? sf::Color::Red : (this->GetState() == Pin::State_t::HIGH) ? sf::Color::Green : sf::Color::Black);
+	this->wire->Transform(sf::Vector2f(position.x + size / 2, position.y + size / 2));
+	this->wire->Rotate(atan2f(offset.y, offset.x) * 180.0f / (atanf(1.0) * 4));
+}
+
 
 void SimulationInput::Disonnect(void)
 {
@@ -56,6 +74,7 @@ void SimulationInput::Update(void)
 	if (this->IsConnected())
 	{
 		this->wire->Update(currentState);
+		this->UpdateWire();
 	}
 }
 
@@ -84,7 +103,7 @@ bool SimulationInput::IsClicked(sf::Event& event) const
 	isClicked = this->Clickable::IsClicked(event);
 	if (this->IsConnected())
 	{
-		isClicked |= this->wire->IsClicked(event);
+		isClicked |= this->IsWireClicked(event);
 	}
 
 	return isClicked;
@@ -92,7 +111,43 @@ bool SimulationInput::IsClicked(sf::Event& event) const
 
 void SimulationInput::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
-	clickInfo.type = SimulationEventType_t::CONNECT;
-	clickInfo.requestInfo.connectRequest.isInput = true;
-	clickInfo.requestInfo.connectRequest.pin = (void*)this;
+	if (!this->IsConnected() && (event.mouseButton.button == sf::Mouse::Left))
+	{
+		clickInfo.type = SimulationEventType_t::CONNECT;
+		clickInfo.requestInfo.connectRequest.isInput = true;
+		clickInfo.requestInfo.connectRequest.pin = (void*)this;
+	}
+	else if (this->IsConnected() && (event.mouseButton.button == sf::Mouse::Right))
+	{
+		clickInfo.type = SimulationEventType_t::DISCONNECT;
+		clickInfo.requestInfo.connectRequest.isInput = true;
+		clickInfo.requestInfo.connectRequest.pin = (void*)this;
+	}
+}
+
+bool SimulationInput::IsWireClicked(sf::Event& event) const
+{
+	bool isClicked;
+
+	float xa = this->connection->GetPosition().x;
+	float ya = this->connection->GetPosition().y;
+	float xb = this->shape->getPosition().x;
+	float yb = this->shape->getPosition().y;
+	float yPos;
+
+	float xc = (float)event.mouseButton.x;
+	float yc = (float)event.mouseButton.y;
+
+	isClicked = false;
+
+	if ((xa <= xc) && (xc <= xb))
+	{
+		yPos = ((ya - yb) / (xa - xb)) * xc + (ya - ((ya - yb) / (xa - xb)) * xa) + this->connectionSize;
+		if ((yPos - (this->connectionSize / 2) <= yc) && (yc <= yPos + (this->connectionSize / 2)))
+		{
+			isClicked = true;
+		}
+	}
+
+	return isClicked;
 }

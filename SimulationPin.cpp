@@ -9,8 +9,8 @@ SimulationPin::SimulationPin(sf::Shape* shape) : Clickable(shape)
 void SimulationPin::Init(float radius, float parentNodeSize, int8_t parentPinsLen, uint8_t index, bool isInput)
 {
 	this->shape = new sf::CircleShape(radius);
-	this->shape->setPosition(sf::Vector2f(isInput ? -radius : parentNodeSize - radius,
-										  -radius + ((parentNodeSize / (parentPinsLen + 1)) * (index + 1))));
+	this->offsetPosition = sf::Vector2f(isInput ? -radius : parentNodeSize - radius,
+												  -radius + ((parentNodeSize / (parentPinsLen + 1)) * (index + 1)));
 }
 
 void SimulationPin::ChangeShape(sf::Shape* shape, sf::Color color)
@@ -35,5 +35,5 @@ void SimulationPin::UpdateColor(sf::Color color) const
 
 void SimulationPin::Transform(const sf::Vector2f& position) const
 {
-	this->Clickable::Transform(this->shape->getPosition() + position);
+	this->Clickable::Transform(this->offsetPosition + position);
 }

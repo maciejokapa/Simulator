@@ -34,13 +34,13 @@ AndNode::AndNode(NodeId_t nodeId, float xPos, float yPos)
 	this->UpdatePins();
 }
 
-void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
+bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 {
 	bool isStateChanged;
-	std::list<NodeId_t> tempList;
 
 	printf("AndNode::Propagate\n");
 
+	isStateChanged = false;
 	this->UpdatePins();
 
 	if ((this->simulationInputs[0].GetState() != Pin::State_t::UNDEFINED) &&
@@ -58,23 +58,15 @@ void AndNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 			printf("	LOW\n");
 		}
 
-		if (isStateChanged)
-		{
-			printf("	state changed\n");
-			this->simulationOutputs[0].GetConnectedObjects(tempList);
-			for (const auto& element : tempList)
-			{
-				toEvaluate.push(element);
-			}
-		}
+		printf("	state changed\n");
+		this->simulationOutputs[0].GetConnectedObjects(toEvaluate);
 	}
+
+	return isStateChanged;
 }
 
 void AndNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("AndNode::OnClick\n");
-	if (SimulationEventType_t::DELETE != SimulationNode::CommonDeleteRequest(event, clickInfo))
-	{
-		(void)SimulationNode::CommonConnectRequest(event, clickInfo);
-	}
+	(void)SimulationNode::CommonRequest(event, clickInfo);
 }

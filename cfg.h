@@ -19,7 +19,6 @@ enum class SimulationEventType_t {
 };
 
 typedef struct MoveRequest_tag {
-	uint8_t pinId;
 	sf::Vector2f orgPosition;
 
 } MoveRequest_t;

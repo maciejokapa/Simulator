@@ -23,10 +23,8 @@ InputNode::InputNode(NodeId_t nodeId, float xPos, float yPos)
 	this->simulationOutputs[0].Propagate(Pin::State_t::LOW);
 }
 
-void InputNode::Propagate(std::queue<NodeId_t>& toEvaluate)
+bool InputNode::Propagate(std::list<NodeId_t>& toEvaluate)
 {
-	std::list<uint16_t> tempList;
-
 	printf("InputNode::Propagate\n");
 
 	this->UpdatePins();		
@@ -42,11 +40,9 @@ void InputNode::Propagate(std::queue<NodeId_t>& toEvaluate)
 		printf("	HIGH->LOW\n");
 	}
 
-	this->simulationOutputs[0].GetConnectedObjects(tempList);
-	for (const auto& e : tempList)
-	{
-		toEvaluate.push(e);
-	}
+	this->simulationOutputs[0].GetConnectedObjects(toEvaluate);
+
+	return true;
 }
 
 void InputNode::UpdatePins(void)
@@ -57,12 +53,9 @@ void InputNode::UpdatePins(void)
 void InputNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
 {
 	printf("InputNode::OnClick\n");
-	if (SimulationEventType_t::DELETE != SimulationNode::CommonDeleteRequest(event, clickInfo))
+	if (SimulationEventType_t::DELETE != SimulationNode::CommonRequest(event, clickInfo))
 	{
-		if (SimulationEventType_t::TOGGLE != this->CustomToggleRequest(event, clickInfo))
-		{
-			(void)SimulationNode::CommonConnectRequest(event, clickInfo);
-		}
+		(void)this->CustomToggleRequest(event, clickInfo);
 	} 
 }
 

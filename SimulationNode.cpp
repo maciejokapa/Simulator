@@ -71,100 +71,69 @@ void SimulationNode::UpdatePins(void)
 	}
 }
 
-SimulationEventType_t SimulationNode::CommonDeleteRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+SimulationEventType_t SimulationNode::CommonRequest(sf::Event& event, ClickInfo_t& clickInfo) const
 {
-	printf("imulationNode::CommonDeleteRequest\n");
-	bool pinsClicked;;
+	printf("CommonRequest");
+	bool pinsClicked;
 
 	pinsClicked = false;
+	uint8_t idx;
 
+	idx = 0u;
 	for (const auto& input : this->simulationInputs)
 	{
-		pinsClicked |= input.IsClicked(event);
-	}
-	for (const auto& output : this->simulationOutputs)
-	{
-		pinsClicked |= output.IsClicked(event);
+		if (input.IsClicked(event))
+		{
+			printf("    pin i");
+			input.OnClick(event, clickInfo);
+			clickInfo.requestInfo.connectRequest.pinId = idx;
+			clickInfo.nodeId = this->id;
+
+			pinsClicked = true;
+			break;
+		}
+		idx++;
 	}
 
 	if (!pinsClicked)
 	{
-		if ((event.mouseButton.button == sf::Mouse::Right) &&
-			(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)))
-		{
-			clickInfo.type = SimulationEventType_t::DELETE;
-			clickInfo.nodeId = this->id;
-
-			printf("TRUE\n");
-		}
-	}
-
-	return clickInfo.type;
-}
-
-SimulationEventType_t SimulationNode::CommonConnectRequest(sf::Event& event, ClickInfo_t& clickInfo) const
-{
-	printf("imulationNode::CommonConnectRequest\n");
-	uint8_t idx;
-
-	if (event.mouseButton.button == sf::Mouse::Left)
-	{
 		idx = 0u;
-		for (const auto& input : this->simulationInputs)
+		for (const auto& output : this->simulationOutputs)
 		{
-			if (input.IsClicked(event))
+			if (output.IsClicked(event))
 			{
-				input.OnClick(event, clickInfo);
+				printf("    pin o");
+				output.OnClick(event, clickInfo);
 				clickInfo.requestInfo.connectRequest.pinId = idx;
 				clickInfo.nodeId = this->id;
+
+				pinsClicked = true;
 				break;
 			}
 			idx++;
 		}
-
-		if (SimulationEventType_t::NONE == clickInfo.type)
-		{
-			idx = 0u;
-			for (const auto& output : this->simulationOutputs)
-			{
-				if (output.IsClicked(event))
-				{
-					output.OnClick(event, clickInfo);
-					clickInfo.requestInfo.connectRequest.pinId = idx;
-					clickInfo.nodeId = this->id;
-					break;
-				}
-				idx++;
-			}
-		}
-	}
-
-	return clickInfo.type;
-}
-
-SimulationEventType_t SimulationNode::CommonMoveRequest(sf::Event& event, ClickInfo_t& clickInfo) const
-{
-	printf("imulationNode::CommonMoveRequest\n");
-	bool pinsClicked;
-
-	pinsClicked = false;
-
-	for (const auto& input : this->simulationInputs)
-	{
-		pinsClicked |= input.IsClicked(event);
-	}
-	for (const auto& output : this->simulationOutputs)
-	{
-		pinsClicked |= output.IsClicked(event);
 	}
 
 	if (!pinsClicked)
 	{
-		if (event.mouseButton.button == sf::Mouse::Left)
+		if (event.mouseButton.button == sf::Mouse::Right)
 		{
-
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl))
+			{
+				printf("    DELETE");
+				clickInfo.type = SimulationEventType_t::DELETE;
+				clickInfo.nodeId = this->id;
+			}
+		}
+		else if (event.mouseButton.button == sf::Mouse::Left)
+		{
+			printf("    MOVE");
+			clickInfo.type = SimulationEventType_t::MOVE;
+			clickInfo.nodeId = this->id;
+			clickInfo.requestInfo.moveRequest.orgPosition = this->basePosition;
 		}
 	}
 
 	return clickInfo.type;
 }
+

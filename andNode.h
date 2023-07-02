@@ -7,7 +7,7 @@ class AndNode : public SimulationNode
 public:
 	AndNode(NodeId_t nodeId, float xPos, float yPos);
 
-	void Propagate(std::queue<NodeId_t>& toEvaluate);
+	bool Propagate(std::list<NodeId_t>&);
 	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
 };
 
