@@ -1,7 +1,5 @@
 #include "AndNode.h"
 
-#include <SFML/Graphics/RectangleShape.hpp>
-
 #include <stdio.h>
 
 #define AND_NODE_IN_LEN		(2u)
@@ -10,7 +8,7 @@
 #define AND_NODE_SIZE		(2.0f * SimulationNode::smallestNodeSize)
 
 AndNode::AndNode(NodeId_t nodeId, float xPos, float yPos) 
-	: SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, new sf::RectangleShape(sf::Vector2f(AND_NODE_SIZE, AND_NODE_SIZE)), xPos, yPos, AND_NODE_SIZE)
+	: SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, AND_NODE_SIZE, xPos, yPos)
 {
 	uint8_t index;
 
@@ -41,7 +39,6 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 	printf("AndNode::Propagate\n");
 
 	isStateChanged = false;
-	this->UpdatePins();
 
 	if ((this->simulationInputs[0].GetState() != Pin::State_t::UNDEFINED) &&
 		(this->simulationInputs[1].GetState() != Pin::State_t::UNDEFINED))
@@ -59,8 +56,15 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 		}
 
 		printf("	state changed\n");
-		this->simulationOutputs[0].GetConnectedObjects(toEvaluate);
 	}
+	else
+	{
+		isStateChanged = this->simulationOutputs[0].Propagate(Pin::State_t::LOW);
+	}
+
+	this->UpdatePins();
+	
+	this->simulationOutputs[0].GetConnectedObjects(toEvaluate);
 
 	return isStateChanged;
 }

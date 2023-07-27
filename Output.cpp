@@ -30,16 +30,16 @@ bool Output::UpdateState(Pin::State_t newState)
 
 void Output::Connect(NodeId_t newConnectedObjectId)
 {
-	if (this->connectedObjectsId.end() == 
-		std::find(this->connectedObjectsId.begin(), this->connectedObjectsId.end(), newConnectedObjectId))
-	{
-		this->connectedObjectsId.push_back(newConnectedObjectId);
-	}
+	this->connectedObjectsId.push_back(newConnectedObjectId);
 }
 
 void Output::Disonnect(NodeId_t connectedObjectId)
 {
-	this->connectedObjectsId.remove(connectedObjectId);
+	std::list<NodeId_t>::iterator it = std::find(this->connectedObjectsId.begin(), this->connectedObjectsId.end(), connectedObjectId);
+	if (this->connectedObjectsId.end() == it)
+	{
+		this->connectedObjectsId.erase(it);
+	}
 }
 
 void Output::GetConnectedObjects(std::list<NodeId_t>& connectedObjectsId) const

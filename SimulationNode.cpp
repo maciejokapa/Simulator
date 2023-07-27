@@ -1,17 +1,18 @@
 #include "SimulationNode.h"
 
 #include "SFML/Window/Keyboard.hpp"
+#include <SFML/Graphics/RectangleShape.hpp>
 
 #include <iostream>
 
 const float SimulationNode::smallestNodeSize = (float)sf::VideoMode::getDesktopMode().height / 30.0f;
 const float SimulationNode::smallestPinSize = smallestNodeSize / 4.0f;
 
-SimulationNode::SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, sf::Shape* shape, float xPos, float yPos, float size)
-	:	Clickable(shape),
+SimulationNode::SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, float nodeSize, float xPos, float yPos)
+	:	Clickable(new sf::RectangleShape(sf::Vector2f(nodeSize, nodeSize))),
 		id(nodeId),
 		basePosition(xPos, yPos), 
-		baseSize(size), 
+		baseSize(nodeSize), 
 		simulationInputs(inLen, SimulationInput()),
 		simulationOutputs(outLen, SimulationOutput())
 {}
@@ -68,6 +69,33 @@ void SimulationNode::UpdatePins(void)
 	for (auto& output : this->simulationOutputs)
 	{
 		output.Update();
+	}
+}
+
+void SimulationNode::Connect(uint8_t internalPinId, ClickInfo_t& connectionClickInfo)
+{
+	if (connectionClickInfo.requestInfo.connectRequest.isInput)
+	{
+		this->simulationOutputs[internalPinId].Connect(connectionClickInfo.nodeId);
+	}
+	else
+	{
+		this->simulationInputs[internalPinId].Connect((SimulationOutput*)connectionClickInfo.requestInfo.connectRequest.pin);
+	}
+}
+
+void SimulationNode::Disconnect(uint8_t pinId, bool isInput, NodeId_t nodeId)
+{
+	printf("\nDisconnect");
+	if (isInput)
+	{
+		printf("\ninput pin %u", pinId);
+		this->simulationInputs[pinId].Disonnect();
+	}
+	else
+	{
+		printf("\noutut pin %u", pinId);
+		this->simulationOutputs[pinId].Disonnect(nodeId);
 	}
 }
 
@@ -130,7 +158,7 @@ SimulationEventType_t SimulationNode::CommonRequest(sf::Event& event, ClickInfo_
 			printf("    MOVE");
 			clickInfo.type = SimulationEventType_t::MOVE;
 			clickInfo.nodeId = this->id;
-			clickInfo.requestInfo.moveRequest.orgPosition = this->basePosition;
+			clickInfo.requestInfo.moveRequest.orgPosition = this->shape->getPosition();
 		}
 	}
 

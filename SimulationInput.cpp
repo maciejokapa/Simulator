@@ -29,13 +29,12 @@ void SimulationInput::Connect(SimulationOutput* connection)
 
 void SimulationInput::UpdateWire(void)
 {
-	const float size = this->connection->GetSize();
 	const sf::Vector2f position = this->connection->GetPosition();
 	const sf::Vector2f offset = this->shape->getPosition() - position;
 	const float length = sqrtf(offset.x * offset.x + offset.y * offset.y);
 
-	this->wire->ChangeShape(new sf::RectangleShape(sf::Vector2f(length, size)), (this->GetState() == Pin::State_t::LOW) ? sf::Color::Red : (this->GetState() == Pin::State_t::HIGH) ? sf::Color::Green : sf::Color::Black);
-	this->wire->Transform(sf::Vector2f(position.x + size / 2, position.y + size / 2));
+	this->wire->ChangeShape(new sf::RectangleShape(sf::Vector2f(length, this->connectionSize)), (this->GetState() == Pin::State_t::LOW) ? sf::Color::Red : (this->GetState() == Pin::State_t::HIGH) ? sf::Color::Green : sf::Color::Black);
+	this->wire->Transform(sf::Vector2f(position.x + this->connectionSize / 2, position.y + this->connectionSize / 2));
 	this->wire->Rotate(atan2f(offset.y, offset.x) * 180.0f / (atanf(1.0) * 4));
 }
 

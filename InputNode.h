@@ -12,7 +12,7 @@ public:
 	/* Name shadowed for similiarity with other nodes */
 	void UpdatePins(void);
 
-	bool Propagate(std::list<NodeId_t>&);
+	bool Propagate(std::list<NodeId_t>& toEvaluate);
 	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
 };
 

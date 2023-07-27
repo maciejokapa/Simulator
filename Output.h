@@ -16,7 +16,7 @@ protected:
 	bool UpdateState(State_t newState);
 
 public:
-	Output(State_t initialState = Pin::State_t::UNDEFINED);
+	Output(State_t initialState = Pin::State_t::LOW);
 	Output(State_t initialState, NodeId_t initialObject);
 
 	void Connect(NodeId_t newConnectedObjectId);

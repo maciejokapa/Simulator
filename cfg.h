@@ -20,6 +20,7 @@ enum class SimulationEventType_t {
 
 typedef struct MoveRequest_tag {
 	sf::Vector2f orgPosition;
+	sf::Vector2f offset;
 
 } MoveRequest_t;
 

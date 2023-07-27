@@ -1,56 +1,73 @@
 #include "SimulationManager.h"
 
+#include <SFML/Window/Event.hpp>
+#include <map>
+
+#include "ConnectionManager.h"
 #include "InputNode.h"
 #include "OutputNode.h"
 #include "AndNode.h"
 
 #include <stdio.h>
 
-SimulationManager* SimulationManager::simManager = nullptr;
-uint16_t SimulationManager::counter = 1u;
+#define SIM_BACKGROUND_COLOR        (sf::Color(82, 78, 72))
 
-SimulationManager::SimulationManager(sf::RenderWindow& gameWindow) : window(gameWindow)
+void SimPropagateSignalSingleStep(NodeId_t nodeId);
+void SimPropagateSignal(NodeId_t nodeId);
+void SimInit(void);
+void SimOnManagerIdle(ClickInfo_t& clickInfo, ClickInfo_t& internalClickInfo, const sf::Event event);
+void SimOnManagerConnect(ClickInfo_t& clickInfo, ClickInfo_t& internalClickInfo, const sf::Event event);
+void SimOnManagerDisconnect(ClickInfo_t& clickInfo);
+void SimOnManagerMove(ClickInfo_t& internalClickInfo, const sf::Event event);
+void SimOnManagerDelete(ClickInfo_t& clickInfo);
+
+enum class SimulationManagerState_t {
+    IDLE,
+    CONNECT,
+    MOVE
+
+};
+
+static uint16_t sim_node_counter = 1u;
+static std::map<NodeId_t, SimulationNode*> sim_nodes;
+static SimulationManagerState_t sim_state;
+
+void SimInit(void)
 {
-    this->state = SimulationManagerState_t::IDLE;
-    memset(&this->internalClickInfo, 0u, sizeof(ClickInfo_t));
+    sim_state = SimulationManagerState_t::IDLE;
 
-    this->nodes[counter] = new InputNode(counter, 50, 150);
-    counter++;
-    this->nodes[counter] = new InputNode(counter, 50, 250);
-    counter++;
-    this->nodes[counter] = new OutputNode(counter, 350, 200);
-    counter++;
-    this->nodes[counter] = new AndNode(counter, 200, 200);
-    counter++;
-
-    /* TO DELETE */
-    // input.out -> node.in
-    //this->nodes[1]->simulationOutputs[0].pin.Connect(4);
-    //this->nodes[2]->simulationOutputs[0].pin.Connect(4);
-    // node.in -> input.out
-    //this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
-    //this->nodes[4]->simulationInputs[1].pin.Connect(&this->nodes[2]->simulationOutputs[0].pin);
-    // node.out -> out.in
-    //this->nodes[4]->simulationOutputs[0].pin.Connect(3);
-    // out.in -> node.out
-    //this->nodes[3]->simulationInputs[0].pin.Connect(&this->nodes[4]->simulationOutputs[0].pin);
-    /* TO DELETE */
+    sim_nodes[sim_node_counter] = new InputNode(sim_node_counter, 50, 150);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new InputNode(sim_node_counter, 50, 250);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new InputNode(sim_node_counter, 50, 350);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new InputNode(sim_node_counter, 50, 450);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new OutputNode(sim_node_counter, 350, 200);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new AndNode(sim_node_counter, 200, 200);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new AndNode(sim_node_counter, 200, 300);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new AndNode(sim_node_counter, 200, 400);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new AndNode(sim_node_counter, 200, 500);
+    sim_node_counter++;
+    sim_nodes[sim_node_counter] = new AndNode(sim_node_counter, 200, 600);
+    sim_node_counter++;
 }
 
-SimulationManager* SimulationManager::GetInstance(sf::RenderWindow& gameWindow)
-{
-    if (SimulationManager::simManager == nullptr) 
-    {
-        SimulationManager::simManager = new SimulationManager(gameWindow);
-    }
-    return SimulationManager::simManager;
-}
-
-void SimulationManager::Run(void)
+void SimRun(sf::RenderWindow& window)
 {
     ClickInfo_t clickInfo;
+    ClickInfo_t internalClickInfo;
     sf::Event event;
+
+    memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
     
+    SimInit();
+
     while (window.waitEvent(event))
     {
 
@@ -72,7 +89,7 @@ void SimulationManager::Run(void)
         memset(&clickInfo, 0u, sizeof(ClickInfo_t));
         if (sf::Event::MouseButtonPressed == event.type)
         {
-            for (const auto node : this->nodes)
+            for (const auto node : sim_nodes)
             {
                 if (node.second->IsClicked(event))
                 {
@@ -86,94 +103,21 @@ void SimulationManager::Run(void)
 /*------------------- Process simulation logic ----------------------*/
 /*-------------------------------------------------------------------*/
 
-        switch (this->state)
+        switch (sim_state)
         {
             case SimulationManagerState_t::IDLE:
             {
-                switch (clickInfo.type)
-                {
-                    case SimulationEventType_t::TOGGLE:
-                    {
-                        this->PropagateSignal(clickInfo.nodeId);
-                        break;
-                    }
-                    case SimulationEventType_t::CONNECT:
-                    {
-                        memcpy(&this->internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
-                        this->state = SimulationManagerState_t::CONNECT;
-                        break;
-                    }
-                    case SimulationEventType_t::MOVE:
-                    {
-                        memcpy(&this->internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
-                        this->state = SimulationManagerState_t::MOVE;
-                        break;
-                    }
-                    case SimulationEventType_t::DELETE:
-                    {
-                        // delete node
-                        // delete connections with connected nodes
-                        // push to toEvaluate all of the nodes that were connected with theirs inputs with deleted node
-                        // call PropagateSignal()
-                        break;
-                    }
-                    default:
-                        break;
-                }
+                SimOnManagerIdle(clickInfo, internalClickInfo, event);
                 break;
             }
             case SimulationManagerState_t::CONNECT:
             {
-                if (sf::Mouse::Button::Right == event.mouseButton.button)
-                {
-                    memset(&this->internalClickInfo, 0u, sizeof(clickInfo));
-                    this->state = SimulationManagerState_t::IDLE;
-                }
-                else
-                {
-                    if (SimulationEventType_t::CONNECT == clickInfo.type)
-                    {
-                        //this->nodes[1]->simulationOutputs[0].pin.Connect(4);
-                        //this->nodes[4]->simulationInputs[0].pin.Connect(&this->nodes[1]->simulationOutputs[0].pin);
-
-                        if ((internalClickInfo.requestInfo.connectRequest.isInput && !clickInfo.requestInfo.connectRequest.isInput) ||
-                            (!internalClickInfo.requestInfo.connectRequest.isInput && clickInfo.requestInfo.connectRequest.isInput))
-                        {
-                            if (internalClickInfo.requestInfo.connectRequest.isInput)
-                            {
-                                (*(SimulationInput*)internalClickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)clickInfo.requestInfo.connectRequest.pin);
-                                (*(SimulationOutput*)clickInfo.requestInfo.connectRequest.pin).Connect(internalClickInfo.nodeId);
-                                this->PropagateSignal(internalClickInfo.nodeId);
-                            }
-                            else
-                            {
-                                (*(SimulationInput*)clickInfo.requestInfo.connectRequest.pin).Connect((SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin);
-                                (*(SimulationOutput*)internalClickInfo.requestInfo.connectRequest.pin).Connect(clickInfo.nodeId);
-                                this->PropagateSignal(clickInfo.nodeId);
-                            }
-
-                            this->state = SimulationManagerState_t::IDLE;
-                            memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
-                        }
-                    }
-                }
-
+                SimOnManagerConnect(clickInfo, internalClickInfo, event);
                 break;
             }
             case SimulationManagerState_t::MOVE:
             {
-                this->nodes[internalClickInfo.nodeId]->Transform(sf::Vector2f((float)event.mouseMove.x, (float)event.mouseMove.y));
-                this->PropagateSignalSingleStep(internalClickInfo.nodeId);
-
-                if (sf::Event::MouseButtonReleased == event.type)
-                {
-                    this->nodes[internalClickInfo.nodeId]->Transform(sf::Vector2f((float)event.mouseButton.x, (float)event.mouseButton.y));
-
-                    this->PropagateSignalSingleStep(internalClickInfo.nodeId);
-                    this->state = SimulationManagerState_t::IDLE;
-                    memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
-                }
-
+                SimOnManagerMove(internalClickInfo, event);
                 break;
             }
             default:
@@ -184,12 +128,12 @@ void SimulationManager::Run(void)
 /*------------------------ Draw -------------------------------------*/
 /*-------------------------------------------------------------------*/
 
-        this->window.clear(sf::Color(82, 78, 72));
-        for (const auto node : this->nodes)
+        window.clear(SIM_BACKGROUND_COLOR);
+        for (const auto node : sim_nodes)
         {
-            node.second->Draw(this->window);
+            node.second->Draw(window);
         }
-        this->window.display();
+        window.display();
 
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
@@ -197,40 +141,185 @@ void SimulationManager::Run(void)
     }
 }
 
-void SimulationManager::PropagateSignal(NodeId_t nodeId)
+
+void SimOnManagerIdle(ClickInfo_t& clickInfo, ClickInfo_t& internalClickInfo, const sf::Event event)
+{
+    switch (clickInfo.type)
+    {
+        case SimulationEventType_t::TOGGLE:
+        {
+            SimPropagateSignal(clickInfo.nodeId);
+            break;
+        }
+        case SimulationEventType_t::CONNECT:
+        {
+            memcpy(&internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
+            sim_state = SimulationManagerState_t::CONNECT;
+            break;
+        }
+        case SimulationEventType_t::DISCONNECT:
+        {
+            SimOnManagerDisconnect(clickInfo);
+            break;
+        }
+        case SimulationEventType_t::MOVE:
+        {
+            memcpy(&internalClickInfo, &clickInfo, sizeof(ClickInfo_t));
+            internalClickInfo.requestInfo.moveRequest.offset = sf::Vector2f(internalClickInfo.requestInfo.moveRequest.orgPosition.x - (float)event.mouseButton.x, internalClickInfo.requestInfo.moveRequest.orgPosition.y - (float)event.mouseButton.y);
+            sim_state = SimulationManagerState_t::MOVE;
+            break;
+        }
+        case SimulationEventType_t::DELETE:
+        {
+            SimOnManagerDelete(clickInfo);
+            // delete node
+            // delete connections with connected sim_nodes
+            // push to toEvaluate all of the sim_nodes that were connected with theirs inputs with deleted node
+            // call SimPropagateSignal()
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+void SimOnManagerConnect(ClickInfo_t& clickInfo, ClickInfo_t& internalClickInfo, const sf::Event event)
+{
+    if (sf::Mouse::Button::Right == event.mouseButton.button)
+    {
+        memset(&internalClickInfo, 0u, sizeof(clickInfo));
+        sim_state = SimulationManagerState_t::IDLE;
+    }
+    else
+    {
+        if (SimulationEventType_t::CONNECT == clickInfo.type)
+        {
+            if ((internalClickInfo.requestInfo.connectRequest.isInput && !clickInfo.requestInfo.connectRequest.isInput) ||
+                (!internalClickInfo.requestInfo.connectRequest.isInput && clickInfo.requestInfo.connectRequest.isInput))
+            {
+                sim_nodes[internalClickInfo.nodeId]->Connect(internalClickInfo.requestInfo.connectRequest.pinId, clickInfo);
+                sim_nodes[clickInfo.nodeId]->Connect(clickInfo.requestInfo.connectRequest.pinId, internalClickInfo);
+
+                if (internalClickInfo.requestInfo.connectRequest.isInput)
+                {
+                    SimPropagateSignal(internalClickInfo.nodeId);
+                    ConnAddNew(clickInfo.nodeId, clickInfo.requestInfo.connectRequest.pinId, internalClickInfo.nodeId, internalClickInfo.requestInfo.connectRequest.pinId);
+                }
+                else
+                {
+                    SimPropagateSignal(clickInfo.nodeId);
+                    ConnAddNew(internalClickInfo.nodeId, internalClickInfo.requestInfo.connectRequest.pinId, clickInfo.nodeId, clickInfo.requestInfo.connectRequest.pinId);
+                }
+
+                sim_state = SimulationManagerState_t::IDLE;
+                memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
+            }
+        }
+    }
+}
+
+void SimOnManagerDisconnect(ClickInfo_t& clickInfo)
+{
+    NodeId_t outputNodeId;
+    uint8_t outputPinId;
+
+    if (ConnFindOutput(clickInfo.nodeId, clickInfo.requestInfo.connectRequest.pinId, &outputNodeId, &outputPinId))
+    {
+        ConnDelete(clickInfo.nodeId, clickInfo.requestInfo.connectRequest.pinId);
+
+        sim_nodes[clickInfo.nodeId]->Disconnect(clickInfo.requestInfo.connectRequest.pinId, true, NODE_ID_INVALID);
+        sim_nodes[outputNodeId]->Disconnect(outputPinId, false, clickInfo.nodeId);
+
+        SimPropagateSignal(clickInfo.nodeId);
+    }
+}
+
+void SimOnManagerDelete(ClickInfo_t& clickInfo)
+{
+    ClickInfo_t tempClickInfo;
+    NodeId_t outputNodeId;
+    uint8_t outputPinId;
+    NodeId_t inputNodeId;
+    uint8_t inputPinId;
+
+    while (ConnFindOutputAndPin(clickInfo.nodeId, &inputPinId, &outputNodeId, &outputPinId))
+    {
+        ConnDelete(clickInfo.nodeId, inputPinId);
+
+        sim_nodes[clickInfo.nodeId]->Disconnect(inputPinId, true, NODE_ID_INVALID);
+        sim_nodes[outputNodeId]->Disconnect(outputPinId, false, clickInfo.nodeId);
+    }
+    SimPropagateSignal(clickInfo.nodeId);
+
+    while (ConnFindInputAndPin(clickInfo.nodeId, &outputPinId, &inputNodeId, &inputPinId))
+    {
+        ConnDelete(inputNodeId, inputPinId);
+
+        sim_nodes[inputNodeId]->Disconnect(inputPinId, true, NODE_ID_INVALID);
+        sim_nodes[clickInfo.nodeId]->Disconnect(outputPinId, false, inputNodeId);
+
+        SimPropagateSignal(inputNodeId);
+    }
+
+    delete sim_nodes[clickInfo.nodeId];
+    sim_nodes.erase(clickInfo.nodeId);
+}
+
+void SimOnManagerMove(ClickInfo_t& internalClickInfo, const sf::Event event)
+{
+    sf::Vector2f tempPosition;
+
+    tempPosition = sf::Vector2f((float)event.mouseMove.x, (float)event.mouseMove.y) + internalClickInfo.requestInfo.moveRequest.offset;
+    sim_nodes[internalClickInfo.nodeId]->Transform(tempPosition);
+    SimPropagateSignalSingleStep(internalClickInfo.nodeId);
+
+    if (sf::Event::MouseButtonReleased == event.type)
+    {
+        tempPosition = sf::Vector2f((float)event.mouseButton.x, (float)event.mouseButton.y) + internalClickInfo.requestInfo.moveRequest.offset;
+        sim_nodes[internalClickInfo.nodeId]->Transform(tempPosition);
+
+        SimPropagateSignalSingleStep(internalClickInfo.nodeId);
+        sim_state = SimulationManagerState_t::IDLE;
+        memset(&internalClickInfo, 0u, sizeof(ClickInfo_t));
+    }
+}
+
+void SimPropagateSignal(NodeId_t nodeId)
 {
     std::list<NodeId_t> tempList;
+    std::queue<NodeId_t> toEvaluate;
 
-    this->toEvaluate.push(nodeId);
-    while (!this->toEvaluate.empty())
+    toEvaluate.push(nodeId);
+    while (!toEvaluate.empty())
     {
-        if (this->nodes[this->toEvaluate.front()]->Propagate(tempList))
+        if (sim_nodes[toEvaluate.front()]->Propagate(tempList))
         {
             while (!tempList.empty())
             {
-                this->toEvaluate.push(tempList.front());
+                toEvaluate.push(tempList.front());
                 tempList.pop_front();
             }
         }
-        this->toEvaluate.pop();
+        toEvaluate.pop();
     } 
 }
 
-void SimulationManager::PropagateSignalSingleStep(NodeId_t nodeId)
+void SimPropagateSignalSingleStep(NodeId_t nodeId)
 {
-    std::list<NodeId_t> dummyList;
     std::list<NodeId_t> tempList;
+    std::queue<NodeId_t> toEvaluate;
 
-    this->toEvaluate.push(nodeId);
-    this->nodes[this->toEvaluate.front()]->Propagate(tempList);
+    toEvaluate.push(nodeId);
+    (void)sim_nodes[toEvaluate.front()]->Propagate(tempList);
     for (const auto& element : tempList)
     {
-        this->toEvaluate.push(element);
+        toEvaluate.push(element);
     }
 
-    while (!this->toEvaluate.empty())
+    while (!toEvaluate.empty())
     {
-        (void)this->nodes[this->toEvaluate.front()]->Propagate(dummyList);
-        this->toEvaluate.pop();
+        /* tempList used as a dummy */
+        (void)sim_nodes[toEvaluate.front()]->Propagate(tempList);
+        toEvaluate.pop();
     } 
 }
