@@ -36,7 +36,7 @@ void Output::Connect(NodeId_t newConnectedObjectId)
 void Output::Disonnect(NodeId_t connectedObjectId)
 {
 	std::list<NodeId_t>::iterator it = std::find(this->connectedObjectsId.begin(), this->connectedObjectsId.end(), connectedObjectId);
-	if (this->connectedObjectsId.end() == it)
+	if (this->connectedObjectsId.end() != it)
 	{
 		this->connectedObjectsId.erase(it);
 	}

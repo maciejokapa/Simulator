@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SimulationPin.h"
+#include "Pin.h"
 
 class SimulationWire : public SimulationPin
 {
@@ -12,6 +13,6 @@ public:
 	void Update(Pin::State_t state) const;
 
 	void Transform(const sf::Vector2f& position) const;
-	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
+	void OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 };
 

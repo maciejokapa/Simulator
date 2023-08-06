@@ -74,11 +74,11 @@ const float SimulationOutput::GetSize() const
 	return ((sf::CircleShape*)this->shape)->getRadius();
 }
 
-void SimulationOutput::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
+void SimulationOutput::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
 	if (event.mouseButton.button == sf::Mouse::Left)
 	{
-		clickInfo.type = SimulationEventType_t::CONNECT;
+		clickInfo.type = Clickable::ClickEventType_t::CONNECT;
 		clickInfo.requestInfo.connectRequest.isInput = false;
 		clickInfo.requestInfo.connectRequest.pin = (void*)this;
 	}

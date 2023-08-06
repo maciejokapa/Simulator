@@ -15,6 +15,6 @@ public:
 	const sf::Vector2f& GetPosition() const;
 	const float GetSize() const;
 
-	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
+	void OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 };
 

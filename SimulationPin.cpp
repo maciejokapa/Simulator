@@ -33,6 +33,30 @@ void SimulationPin::UpdateColor(sf::Color color) const
 	this->shape->setFillColor(color);
 }
 
+void SimulationPin::UpdateColor(Pin::State_t state) const
+{
+	switch (state)
+	{
+		case Pin::State_t::LOW:
+		{
+			this->UpdateColor(sf::Color::Red);
+			break;
+		}
+
+		case Pin::State_t::HIGH:
+		{
+			this->UpdateColor(sf::Color::Green);
+			break;
+		}
+
+		case Pin::State_t::UNDEFINED:
+		{
+			this->UpdateColor(sf::Color::Black);
+			break;
+		}
+	}
+}
+
 void SimulationPin::Transform(const sf::Vector2f& position) const
 {
 	this->Clickable::Transform(this->offsetPosition + position);

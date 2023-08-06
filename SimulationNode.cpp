@@ -8,11 +8,9 @@
 const float SimulationNode::smallestNodeSize = (float)sf::VideoMode::getDesktopMode().height / 30.0f;
 const float SimulationNode::smallestPinSize = smallestNodeSize / 4.0f;
 
-SimulationNode::SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, float nodeSize, float xPos, float yPos)
+SimulationNode::SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, float nodeSize)
 	:	Clickable(new sf::RectangleShape(sf::Vector2f(nodeSize, nodeSize))),
 		id(nodeId),
-		basePosition(xPos, yPos), 
-		baseSize(nodeSize), 
 		simulationInputs(inLen, SimulationInput()),
 		simulationOutputs(outLen, SimulationOutput())
 {}
@@ -72,7 +70,7 @@ void SimulationNode::UpdatePins(void)
 	}
 }
 
-void SimulationNode::Connect(uint8_t internalPinId, ClickInfo_t& connectionClickInfo)
+void SimulationNode::Connect(uint8_t internalPinId, Clickable::ClickInfo_t& connectionClickInfo)
 {
 	if (connectionClickInfo.requestInfo.connectRequest.isInput)
 	{
@@ -99,7 +97,7 @@ void SimulationNode::Disconnect(uint8_t pinId, bool isInput, NodeId_t nodeId)
 	}
 }
 
-SimulationEventType_t SimulationNode::CommonRequest(sf::Event& event, ClickInfo_t& clickInfo) const
+Clickable::ClickEventType_t SimulationNode::CommonRequest(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
 	printf("CommonRequest");
 	bool pinsClicked;
@@ -149,14 +147,14 @@ SimulationEventType_t SimulationNode::CommonRequest(sf::Event& event, ClickInfo_
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl))
 			{
 				printf("    DELETE");
-				clickInfo.type = SimulationEventType_t::DELETE;
+				clickInfo.type = Clickable::ClickEventType_t::DELETE;
 				clickInfo.nodeId = this->id;
 			}
 		}
 		else if (event.mouseButton.button == sf::Mouse::Left)
 		{
 			printf("    MOVE");
-			clickInfo.type = SimulationEventType_t::MOVE;
+			clickInfo.type = Clickable::ClickEventType_t::MOVE;
 			clickInfo.nodeId = this->id;
 			clickInfo.requestInfo.moveRequest.orgPosition = this->shape->getPosition();
 		}

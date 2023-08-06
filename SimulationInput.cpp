@@ -108,17 +108,17 @@ bool SimulationInput::IsClicked(sf::Event& event) const
 	return isClicked;
 }
 
-void SimulationInput::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
+void SimulationInput::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
 	if (!this->IsConnected() && (event.mouseButton.button == sf::Mouse::Left))
 	{
-		clickInfo.type = SimulationEventType_t::CONNECT;
+		clickInfo.type = Clickable::ClickEventType_t::CONNECT;
 		clickInfo.requestInfo.connectRequest.isInput = true;
 		clickInfo.requestInfo.connectRequest.pin = (void*)this;
 	}
 	else if (this->IsConnected() && (event.mouseButton.button == sf::Mouse::Right))
 	{
-		clickInfo.type = SimulationEventType_t::DISCONNECT;
+		clickInfo.type = Clickable::ClickEventType_t::DISCONNECT;
 		clickInfo.requestInfo.connectRequest.isInput = true;
 		clickInfo.requestInfo.connectRequest.pin = (void*)this;
 	}

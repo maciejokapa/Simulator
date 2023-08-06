@@ -8,6 +8,6 @@ public:
 	AndNode(NodeId_t nodeId, float xPos, float yPos);
 
 	bool Propagate(std::list<NodeId_t>& toEvaluate);
-	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
+	void OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 };
 

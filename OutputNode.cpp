@@ -7,11 +7,11 @@
 #define OUTPUT_NODE_SIZE		(2.0f * SimulationNode::smallestNodeSize)
 
 OutputNode::OutputNode(NodeId_t nodeId, float xPos, float yPos)
-	: SimulationNode(nodeId, OUTPUT_NODE_IN_LEN, OUTPUT_NODE_OUT_LEN, OUTPUT_NODE_SIZE, xPos, yPos)
+	: SimulationNode(nodeId, OUTPUT_NODE_IN_LEN, OUTPUT_NODE_OUT_LEN, OUTPUT_NODE_SIZE)
 {
 	this->simulationInputs[0].Init(SimulationNode::smallestPinSize, OUTPUT_NODE_SIZE, OUTPUT_NODE_IN_LEN, 0u);
 
-	this->Transform(sf::Vector2f(this->basePosition.x - OUTPUT_NODE_SIZE / 2, this->basePosition.y - OUTPUT_NODE_SIZE / 2));
+	this->Transform(sf::Vector2f(xPos - OUTPUT_NODE_SIZE / 2, yPos - OUTPUT_NODE_SIZE / 2));
 	this->shape->setFillColor(sf::Color::Blue);
 
 	this->UpdatePins();
@@ -27,7 +27,7 @@ bool OutputNode::Propagate(std::list<NodeId_t>& toEvaluate)
 	return true;
 }
 
-void OutputNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
+void OutputNode::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
 	printf("OutputNode::OnClick\n");
 	(void)SimulationNode::CommonRequest(event, clickInfo);

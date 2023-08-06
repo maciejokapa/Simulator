@@ -5,7 +5,7 @@
 class InputNode : public SimulationNode
 {
 private:
-	SimulationEventType_t CustomToggleRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	Clickable::ClickEventType_t CustomToggleRequest(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 public:
 	InputNode(NodeId_t nodeId, float xPos, float yPos);
 
@@ -13,6 +13,6 @@ public:
 	void UpdatePins(void);
 
 	bool Propagate(std::list<NodeId_t>& toEvaluate);
-	void OnClick(sf::Event& event, ClickInfo_t& clickInfo) const;
+	void OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 };
 

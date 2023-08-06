@@ -8,7 +8,7 @@
 #define AND_NODE_SIZE		(2.0f * SimulationNode::smallestNodeSize)
 
 AndNode::AndNode(NodeId_t nodeId, float xPos, float yPos) 
-	: SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, AND_NODE_SIZE, xPos, yPos)
+	: SimulationNode(nodeId, AND_NODE_IN_LEN, AND_NODE_OUT_LEN, AND_NODE_SIZE)
 {
 	uint8_t index;
 
@@ -26,7 +26,7 @@ AndNode::AndNode(NodeId_t nodeId, float xPos, float yPos)
 		index++;
 	}
 
-	this->Transform(sf::Vector2f(this->basePosition.x - AND_NODE_SIZE / 2, this->basePosition.y - AND_NODE_SIZE / 2));
+	this->Transform(sf::Vector2f(xPos - AND_NODE_SIZE / 2, yPos - AND_NODE_SIZE / 2));
 	this->shape->setFillColor(sf::Color::Blue);
 
 	this->UpdatePins();
@@ -69,7 +69,7 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 	return isStateChanged;
 }
 
-void AndNode::OnClick(sf::Event& event, ClickInfo_t& clickInfo) const
+void AndNode::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
 	printf("AndNode::OnClick\n");
 	(void)SimulationNode::CommonRequest(event, clickInfo);

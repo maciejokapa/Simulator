@@ -12,26 +12,22 @@ class SimulationNode : public Clickable
 protected:
 	const NodeId_t id;
 
-	const float baseSize;
-	sf::Vector2f basePosition;
-
-	static const float smallestNodeSize;
-	static const float smallestPinSize;
-
 	std::vector<SimulationInput> simulationInputs;
 	std::vector<SimulationOutput> simulationOutputs;
 
-	SimulationEventType_t CommonRequest(sf::Event& event, ClickInfo_t& clickInfo) const;
+	Clickable::ClickEventType_t CommonRequest(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const;
 
 public:
+	static const float smallestNodeSize;
+	static const float smallestPinSize;
 
-	SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, float nodeSize, float xPos, float yPos);
+	SimulationNode(NodeId_t nodeId, uint16_t inLen, uint16_t outLen, float nodeSize);
 
 	bool IsClicked(sf::Event& event) const;
 
 	void UpdatePins(void);
 
-	void Connect(uint8_t internalPinId, ClickInfo_t& connectionClickInfo);
+	void Connect(uint8_t internalPinId, Clickable::ClickInfo_t& connectionClickInfo);
 	void Disconnect(uint8_t pinId, bool isInput, NodeId_t nodeId);
 
 	void Draw(sf::RenderWindow& window) const;
