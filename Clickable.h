@@ -1,15 +1,15 @@
 #pragma once
 
-#include <SFML/Window/Event.hpp>
+#include "cfg.h"
+
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Shape.hpp>
-
-#include "cfg.h"
+#include <SFML/Window/Event.hpp>
 
 class Clickable
 {
 protected:
-	sf::Shape* shape;
+	sf::Shape* shape;		// TODOPTR
 
 public:
 	enum class ClickEventType_t {

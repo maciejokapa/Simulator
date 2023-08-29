@@ -1,8 +1,7 @@
 #include "SimulationInput.h"
-#include <SFML/Graphics/RectangleShape.hpp>
 
 #include <cmath>
-#include <stdio.h>
+#include <SFML/Graphics/RectangleShape.hpp>
 
 SimulationInput::SimulationInput(void) : Input(), SimulationPin()
 {
@@ -49,26 +48,7 @@ void SimulationInput::Update(void)
 {
 	Pin::State_t currentState = this->GetState();
 
-	switch (currentState)
-	{
-		case Pin::State_t::LOW:
-		{
-			this->UpdateColor(sf::Color::Red);
-			break;
-		}
-
-		case Pin::State_t::HIGH:
-		{
-			this->UpdateColor(sf::Color::Green);
-			break;
-		}
-
-		case Pin::State_t::UNDEFINED:
-		{
-			this->UpdateColor(sf::Color::Black);
-			break;
-		}
-	}
+	this->UpdateColor(currentState);
 
 	if (this->IsConnected())
 	{

@@ -2,8 +2,6 @@
 
 #include <SFML/Graphics/RectangleShape.hpp>
 
-#include <stdio.h>
-
 #define INPUT_NODE_IN_LEN		(1u)
 #define INPUT_NODE_OUT_LEN		(1u)
 #define INPUT_NODE_SIZE			(2.0f * SimulationNode::smallestNodeSize)
@@ -24,21 +22,16 @@ InputNode::InputNode(NodeId_t nodeId, float xPos, float yPos)
 
 bool InputNode::Propagate(std::list<NodeId_t>& toEvaluate)
 {
-	printf("InputNode::Propagate\n");
-
-
 	if (this->simulationOutputs[0].GetState() == Pin::State_t::LOW)
 	{
 		this->simulationOutputs[0].Propagate(Pin::State_t::HIGH);
-		printf("	LOW->HIGH\n");
 	}
 	else if (this->simulationOutputs[0].GetState() == Pin::State_t::HIGH)
 	{
 		this->simulationOutputs[0].Propagate(Pin::State_t::LOW);
-		printf("	HIGH->LOW\n");
 	}
 
-	this->UpdatePins();
+	this->InputNode::UpdatePins();
 
 	this->simulationOutputs[0].GetConnectedObjects(toEvaluate);
 
@@ -52,7 +45,6 @@ void InputNode::UpdatePins(void)
 
 void InputNode::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
-	printf("InputNode::OnClick\n");
 	if (Clickable::ClickEventType_t::DELETE != SimulationNode::CommonRequest(event, clickInfo))
 	{
 		(void)this->CustomToggleRequest(event, clickInfo);

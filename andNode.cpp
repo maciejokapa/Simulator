@@ -1,7 +1,5 @@
 #include "AndNode.h"
 
-#include <stdio.h>
-
 #define AND_NODE_IN_LEN		(2u)
 #define AND_NODE_OUT_LEN	(1u)
 
@@ -36,8 +34,6 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 {
 	bool isStateChanged;
 
-	printf("AndNode::Propagate\n");
-
 	isStateChanged = false;
 
 	if ((this->simulationInputs[0].GetState() != Pin::State_t::UNDEFINED) &&
@@ -47,15 +43,11 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 			this->simulationInputs[1].GetState() == Pin::State_t::HIGH)
 		{
 			isStateChanged = this->simulationOutputs[0].Propagate(Pin::State_t::HIGH);
-			printf("	HIGH\n");
 		}
 		else
 		{
 			isStateChanged = this->simulationOutputs[0].Propagate(Pin::State_t::LOW);
-			printf("	LOW\n");
 		}
-
-		printf("	state changed\n");
 	}
 	else
 	{
@@ -71,6 +63,5 @@ bool AndNode::Propagate(std::list<NodeId_t>& toEvaluate)
 
 void AndNode::OnClick(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
-	printf("AndNode::OnClick\n");
 	(void)SimulationNode::CommonRequest(event, clickInfo);
 }

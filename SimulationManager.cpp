@@ -1,14 +1,12 @@
 #include "SimulationManager.h"
 
-#include <SFML/Window/Event.hpp>
 #include <map>
+#include <SFML/Window/Event.hpp>
 
+#include "AndNode.h"
 #include "ConnectionManager.h"
 #include "InputNode.h"
 #include "OutputNode.h"
-#include "AndNode.h"
-
-#include <stdio.h>
 
 #define SIM_BACKGROUND_COLOR        (sf::Color(82, 78, 72))
 

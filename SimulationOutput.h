@@ -3,7 +3,7 @@
 #include "Output.h"
 #include "SimulationPin.h"
 
-#include "SFML/System/Vector2.hpp"
+#include <SFML/System/Vector2.hpp>
 
 class SimulationOutput : public Output, public SimulationPin
 {

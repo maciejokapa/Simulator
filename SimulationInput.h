@@ -1,15 +1,15 @@
 #pragma once
 
 #include "Input.h"
-#include "SimulationPin.h"
 #include "SimulationOutput.h"
+#include "SimulationPin.h"
 #include "SimulationWire.h"
 
 class SimulationInput : public Input, public SimulationPin
 {
 private:
-	SimulationWire* wire;
-	SimulationOutput* connection;
+	SimulationWire* wire;			// TODOPTR
+	SimulationOutput* connection;	// TODOPTR
 	float connectionSize;
 
 	bool IsWireClicked(sf::Event& event) const;

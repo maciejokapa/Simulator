@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics/CircleShape.hpp>
 
-#include <stdio.h>
 SimulationPin::SimulationPin(sf::Shape* shape) : Clickable(shape)
 {}	
 

@@ -1,7 +1,5 @@
 #include "Clickable.h"
 
-#include <stdio.h>
-
 Clickable::Clickable(sf::Shape* shape) : shape(shape)
 {}
 

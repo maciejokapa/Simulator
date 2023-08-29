@@ -1,11 +1,9 @@
 #pragma once
 
-#include <list>
-#include <functional>
-
 #include "cfg.h"
 #include "Pin.h"
 
+#include <list>
 
 class Output : public Pin
 {

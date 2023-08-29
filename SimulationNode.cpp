@@ -1,9 +1,7 @@
 #include "SimulationNode.h"
 
-#include "SFML/Window/Keyboard.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
-
-#include <iostream>
+#include <SFML/Window/Keyboard.hpp>
 
 const float SimulationNode::smallestNodeSize = (float)sf::VideoMode::getDesktopMode().height / 30.0f;
 const float SimulationNode::smallestPinSize = smallestNodeSize / 4.0f;
@@ -84,22 +82,18 @@ void SimulationNode::Connect(uint8_t internalPinId, Clickable::ClickInfo_t& conn
 
 void SimulationNode::Disconnect(uint8_t pinId, bool isInput, NodeId_t nodeId)
 {
-	printf("\nDisconnect");
 	if (isInput)
 	{
-		printf("\ninput pin %u", pinId);
 		this->simulationInputs[pinId].Disonnect();
 	}
 	else
 	{
-		printf("\noutut pin %u", pinId);
 		this->simulationOutputs[pinId].Disonnect(nodeId);
 	}
 }
 
 Clickable::ClickEventType_t SimulationNode::CommonRequest(sf::Event& event, Clickable::ClickInfo_t& clickInfo) const
 {
-	printf("CommonRequest");
 	bool pinsClicked;
 
 	pinsClicked = false;
@@ -110,7 +104,6 @@ Clickable::ClickEventType_t SimulationNode::CommonRequest(sf::Event& event, Clic
 	{
 		if (input.IsClicked(event))
 		{
-			printf("    pin i");
 			input.OnClick(event, clickInfo);
 			clickInfo.requestInfo.connectRequest.pinId = idx;
 			clickInfo.nodeId = this->id;
@@ -128,7 +121,6 @@ Clickable::ClickEventType_t SimulationNode::CommonRequest(sf::Event& event, Clic
 		{
 			if (output.IsClicked(event))
 			{
-				printf("    pin o");
 				output.OnClick(event, clickInfo);
 				clickInfo.requestInfo.connectRequest.pinId = idx;
 				clickInfo.nodeId = this->id;
@@ -146,14 +138,12 @@ Clickable::ClickEventType_t SimulationNode::CommonRequest(sf::Event& event, Clic
 		{
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl))
 			{
-				printf("    DELETE");
 				clickInfo.type = Clickable::ClickEventType_t::DELETE;
 				clickInfo.nodeId = this->id;
 			}
 		}
 		else if (event.mouseButton.button == sf::Mouse::Left)
 		{
-			printf("    MOVE");
 			clickInfo.type = Clickable::ClickEventType_t::MOVE;
 			clickInfo.nodeId = this->id;
 			clickInfo.requestInfo.moveRequest.orgPosition = this->shape->getPosition();

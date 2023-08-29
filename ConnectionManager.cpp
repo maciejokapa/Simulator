@@ -1,7 +1,6 @@
 #include "ConnectionManager.h"
-#include <map>
 
-#include <stdio.h>
+#include <map>
 
 #define ENCODE_KEY(_NODE_ID_, _PIN_ID_)		((uint32_t)((((uint32_t)(_PIN_ID_)) << 16u) | _NODE_ID_))
 
